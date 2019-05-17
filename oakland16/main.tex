@@ -1,0 +1,137 @@
+%\newcommand{\compacttitlespacing}{1}%disable when we need room for authors
+\documentclass[conference]{IEEEtran}
+%\usepackage[hmargin=.7in,vmargin=.7in]{geometry}
+%\usepackage[total={7.2in, 9.5in}]{geometry}
+%\usepackage{times}
+
+%\usepackage{cite}
+\usepackage{cite}
+\usepackage{nicefrac}
+\usepackage{siunitx}
+\usepackage[bookmarks=false]{hyperref}
+\usepackage{xspace}
+\usepackage{color}
+\usepackage[table]{xcolor}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb,amsthm,amsfonts}
+\usepackage{setspace}
+\usepackage{pbox}
+%\usepackage{float}
+%\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{epsfig}
+%\usepackage{wrapfig}
+%\usepackage{textcomp}
+%\allowdisplaybreaks[2]
+%\usepackage{latexsym}
+\usepackage{graphics,graphicx}
+%\usepackage{fancyhdr}
+%\usepackage{url}
+%\usepackage{enumerate}
+\usepackage{algorithm,algorithmicx,algpseudocode}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{filecontents}
+\usepackage{booktabs,array}
+\usetikzlibrary{patterns}
+\usepackage{caption}
+\usepackage{subcaption}
+
+%\usepgfplotslibrary{external}
+%\tikzexternalize
+\setlength{\belowcaptionskip}{-5pt}
+
+\def\Midrule{\midrule[\heavyrulewidth]}\usetikzlibrary{arrows}
+
+\input{tomsdefs}
+
+\newcounter{magicrownumbers}
+\newcommand\rownumber{\stepcounter{magicrownumbers}\arabic{magicrownumbers}}
+
+\begin{document}
+
+\bibliographystyle{IEEEtranS}
+
+
+%\title{Securely Correcting Typical pASSWORD tYPOS} 
+\title{pASSWORD tYPOS and \\ How to Correct Them Securely}
+%\title{Correcting pASSWORD Typos Securely}
+%\title{To Err is Human:\\ Typo-Tolerant Password Checking}
+%\title{Password Typos; Securely Tolerating Them}
+%\title{Secure Typo-Tolerant Password Checking}
+%\title{Password Typos\\ and the Security of Tolerating Them}
+%\title{Have Your Cake and Eat It Too: \\ Secure Typo-Tolerant Password Checking}%\\ of User-Selected Passwords}
+%\title{Horseshoes and Password Entry: \\ Secure Typo-Tolerant Password Checking}%\\ of User-Selected Passwords}
+%\title{Close is Good Enough: \\ Typo-tolerant Checking of  User-Selected Passwords}
+%\title{Typo-tolerant Password Checking and its Security}
+
+\author{ \IEEEauthorblockN{ Rahul Chatterjee\IEEEauthorrefmark{1},
+    Anish Athalye\IEEEauthorrefmark{2}\IEEEauthorrefmark{3}, Devdatta
+    Akhawe\IEEEauthorrefmark{3}, Ari Juels\IEEEauthorrefmark{1},
+    Thomas Ristenpart\IEEEauthorrefmark{1}}
+  
+  \IEEEauthorblockA{\IEEEauthorrefmark{1} Cornell Tech,\hspace{1in}
+    \IEEEauthorrefmark{2} MIT, \hspace{1in} \IEEEauthorrefmark{3} Dropbox}
+}
+
+\makeatletter
+\let\@copyrightspace\relax
+\makeatother
+
+
+
+
+\maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
+ \input{plot-settings} % plot related functions
+ 
+\input{abstract}
+
+\input{intro}
+\input{background}
+%\input{model}
+\input{mturk}
+\input{dropbox}
+%\input{overview}
+\input{formal}
+%\input{constructions}
+\input{security}
+\input{conclusion}
+
+\section*{Acknowledgements}
+
+This work was funded in part by NSF grants CNS-1330308 and CNS-1514163 as well
+as a generous gift by Microsoft.
+
+%\bibliographystyle{plain}
+\bibliography{bib}
+
+
+\appendix
+\input{appendix}
+%\input{relwork}
+%\appendix
+%\input{domainhiding}
+%\input{kamouflageattack}
+%\input{eval}
+%\input{vaultsanitization}
+
+
+\end{document}
+
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

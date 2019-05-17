@@ -1,0 +1,63 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Modeling Typo Tolerance and its Security}
+\label{sec:model}
+
+\def\E{{\mathcal{E}}}
+
+Authentication failure due to small mistake in typing a password is
+frustrating. We want to design an authentication system that will accept a
+password even if it is off by some small typos. In this section we shall
+formalize the notion of typo tolerance. The basic idea is when the entered
+password is not correct, the authentication server will try to find few possible
+transforms of the that password and check if any of them is the correct password,
+and if the server can find possible correct password within the acceptable
+mutations, it will let the user login without asking the user to retype the
+password. Obviously accepting variants of password will lead to degradation in
+security. But we claim, that we can find an optimal set of the mutations that
+offers higher typo tolerance to probable typos at the cost of minimal loss in
+security. This will not only increase users' experience with the website, it
+will increase the amount of time a user stays online in the service. We shall
+explain how we measure the security and how we can estimate the loss in security
+in section~\ref{sec:security}.
+
+Let $\Gamma$ be the set of alphabets allowed by most of the password policies,
+and all passwords are strings over $\Gamma$.  We call the entered or typed
+password as $t_{w}$, and the stored password as $s_w$.  We assume, the passwords
+are not stored in plain text, rather the passwords are properly salted and
+hashed with a strong cryptographic hash function, and the hash digest is stored
+into the database. So, we can only check the equality or inequality of an
+entered password with a stored password, by salting and hashing the entered
+password accordingly.  For simplicity of presentation, we shall not use hash
+function, and when we say $t_w=s_w$ (or $t_w\ne s_w$), we actually mean
+$h(s_w)=h(t_w)$ (or $h(s_w)\ne h(t_w)~)$, where $h$ is a cryptographically
+strong one way hash function. On receiving $t_w$ for some user $u$, the server
+will first retrieve the corresponding $s_w$ for the user and then check,
+$t_w\stackrel{?}{=}s_w$, if the check fails, the server will apply a set of
+transforms or edits on $t_w$, and try to see if any of the mutated string
+matches with $s_w$. The authentication succeeds if either $t_w$ or any of its
+transforms matches with $s_w$.
+
+Transform is a deterministic function $e$ that maps a string in $\Gamma^*$ to a
+string $\Gamma^*$. Let $\E$ be set of all possible transforms, and the server
+only implements a small subset of these edits, which we call $E$.  Typo ($\tau$)
+is also similar to transforms.  A noisy channel model of typing is following:
+typing a password is equivalent of choosing a $\tau$ from $\E$ and applying that
+on the actual password ($s_w$) to produce $t_w$. The server wants to revert that
+noise, and recover the original password $s_w$.
+
+We need to keep the set $E$ small for two reasons. Firstly, the number of hash
+computation is linear in size of $E$ and hence large $E$ will impose higher
+computational cost on the authentication server. Second, and the bigger reason,
+is more edits implies it will be easier for an attacker to guess the password
+for a user account. Also, $\beta$-success rate will increase for an attacker
+with the same list of guesses.
+
+Our goal is to find an optimal $E$ that \rcnote{left here..}
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

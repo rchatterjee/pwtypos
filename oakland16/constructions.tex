@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Building Approximate Password Checkers}
+\label{sec:constructions}
+
+Our final goal is to create an authentication mechanism that accepts typo in the
+passwords. The major challenge in building a system like that is the
+unavailability of the original password at the time of authentication.  The
+cryptographic hash functions are built to make sure that no plain text operation
+can be translated to any operation on the hash digest. Hence, it is difficult to
+figure out whether or not the entered password is a typo.   
+
+\begin{itemize}
+\item It will require more traction to modify the existing user data.
+\item Moreover, changing any hashing scheme will affect the security of stored
+  passwords, and we don't want to change the offline security (i.e., if the
+  server data gets leaked our typo tolerance should have any effect on the security.)
+\item So, the only option left is generating a set of candidate ``real
+  passwords'' ($r_w$) for each of the entered password $t_w$.
+\item Now question is, how to generate these candidates given a trained typo
+  model, which is a weight matrix of edits.
+\end{itemize}
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

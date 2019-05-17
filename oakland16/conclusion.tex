@@ -1,0 +1,26 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented the first treatment of typo-tolerant password authentication. We
+demonstrated, with large-scale, real-world experiments, that password typos are
+a real and common source of user errors in authentication systems. We found that
+a few types of typo-corrections account for an overwhelming number of password
+typos. We provided a formal framework for exploring typo-tolerant password
+checkers, and focused on a class of them called relaxed checkers that are
+backwards-compatible with existing password hashing schemes. We showed, via what
+we call the free corrections theorem, that there exist relaxed checkers against
+which the best attack performs no better than the best attack against an exact
+checker. Unfortunately the construction requires exact knowledge of the password
+distribution. We therefore gave a number of practical typo-tolerant checkers
+inspired by it,  and analyzed their security empirically, showing that one can
+easily obtain significant utility improvement with minimal or no security
+degradation.
+
+In future work, we plan to investigate whether typo-tolerance will actually
+serve to improve overall security. Because allowing for password typos
+increases login success rates in benign scenarios, it may help to make
+adversarial login attempts stick out.  This would strengthen the signals used to
+detect online password attacks as used in Internet-scale authentication systems. 
+
+

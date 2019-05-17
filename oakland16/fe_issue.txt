@@ -1,0 +1,21 @@
+
+# Symbols and their meaning.
+F = alphabet size = 96 (All ASCII printable characters), => log F = 8
+n = length of password, n = 8 (or 10)
+t = number of errors tolerated, t = 1 (1 edit is tolerated)
+c = size of the c-singles, c = 1 or 2 (for optimality (Need to Check)
+
+nlogn = 8log 8  = 24
+logF = 8 (conservatively)
+
+Secloss = (nlogn)/c + c(2c-1)tlogF + 2log(1/epsilon)   # Relaxed setting
+	= 24/c + c(2c-1)6 + 2log(1/epsilon)
+	>= 32 + 2log(1/epsilon)   # if we assume c = 1, it is an increasing function with c.
+
+or
+
+
+Secloss = t(logF)2^{O(\sqrt{log(nlogF)log log (nlogF)})}  # Using Ostrovsky and Rabani embedding
+	= 8 * 2^{O(3.93)}
+	\approx 8 * 2^4 = 128 (!!)
+

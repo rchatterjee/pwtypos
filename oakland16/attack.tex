@@ -1,0 +1,221 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Computing $\greedylambda_q$}
+\label{sec:faster-attack}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+We start by showing that computing the optimal $q$ guesses to make
+against a relaxed checker is NP-hard in general. Later, we present an
+efficient approximate algorithm for the problem.
+
+
+\begin{definition} {\bf Best-$q$-guess.} Given a function
+  $\ball:\strings \rightarrow \PW^*$, a password distribution
+  $\pwprob$ over $\PW\subseteq\strings$, and a query budget $q$, find
+  a $q$-size subset $P\subseteq \strings$, such that
+  $\sum_{\pw\in C'}\pwprob(\pw)$ is maximized, where
+  $C' = \bigcup_{\pwtypo\in P}\ball(\pwtypo)$.
+\end{definition}
+
+\begin{definition} {\bf Maximum coverage problem.} Given a ground set
+  $E=\{e_1, e_2,\ldots e_n\}$, a collection of $m$ subsets of $E$,
+  $S = \{S_1, S_2,\ldots,S_m\}$, and a weight function
+  $\gamma:E\rightarrow \R^+$ that assigns weights to each element
+  $e\in E$, find a subset $C\subseteq S$ of size $k$, such that
+  the following quantity is maximized, $ \sum_{e\in C'}\gamma(e) $,
+  where $C' = \bigcup_{S_i\in C} S_i$.
+\end{definition}
+
+The maximum coverage problem is known to be
+NP-hard~\cite{feige1998threshold}. We can thus prove the
+following theorem.
+
+\begin{theorem}
+  \label{th:finding-best-q}
+  If there is a polynomial time algorithm for best-$q$-guess, there
+  exists a polynomial time algorithm for maximum coverage
+  problem.
+\end{theorem}
+
+\noindent\proof We shall show a polynomial time reduction from the maximum coverage
+problem to the best-$q$-guess problem. To start with, we are given an
+instance of maximum coverage problem with $(E, S, \gamma, k)$, and we
+want to construct an instance of best-$q$-guess problem.  To do so, we
+set $\PW = E$ and probability $\pwprob$ as proportional to
+$\gamma$. (We might have to normalize $\gamma$ to make it a
+probability distribution.)  The function
+$\ball:\strings \rightarrow \PW^*$ is defined as follows.  First add
+to $\strings$ a set $W^* = \{\pwtypo^*_i\}_{i=1}^m$, with
+$\pwprob(\pwtypo^*_i) = 0$, and for each $S_i\in S$, set
+$\ball(\pwtypo^*_i) = S_i \,\bigcup\, \{\pwtypo^*_i\}$. For all other
+$\pwtypo\in \strings\setminus W^*$, let
+$\ball(\pwtypo) = \{\pwtypo\}$. This is a valid instance of the
+best-$q$-guess problem, and if we can find an polynomial time
+computable solution to this, we can solve the maximum weighted set
+cover problem in polynomial time. \qedsym
+
+% The best
+% guesses output by the solver can be mapped back to the best set of $k$
+% sets which maximizes the cumulative weight.  The reduction is in
+% polynomial time.
+
+
+% where $\pwtypo_i\in \strings$.
+
+%  For Best-$q$-guess problem
+% we have a checker $\checker$ that checks every password in a ball
+% $\ball(\pwtypo)\subseteq\PW$ on any submitted password $\pwtypo$. Let
+% $E=\PW$ be the set of elements, and
+% $S_i = \ball(\pwtypo_i)\subseteq \PW$. Now, in our context
+% $S = \{\ball(s)\cap\PW\,|\,s\in \strinsg\}$. The weight function is
+% $\pwprob$ that assigns a probability to each $\pw\in \PW$.  The
+% problem is asked to find a set $P\subset\strings$ of size $q$ such
+% that $\sum_{\pw\in\C'}\pwprob(\pw)$ is maximized, where
+% $C'=\bigcup_{s\in P}\ball(s)$.
+
+
+% Given any set cover problem with parameter $(E, S, \gamma, k)$ we can
+% reduce that to optimal $q$-guessing problem by the way we just
+% described. So, if there is a polynomial time algorithm for the later
+% than so would be for the former. But, maximum weighted set cover is a
+% well known NP-hard problem, so is $q$-guessing problem.
+
+
+Nevertheless, a greedy algorithm can achieve
+$(1-{1\over e})$ times the optimal $\fuzzlambda$ value and, as shown by  Feige~\cite{feige1998threshold,nemhauser1978analysis}, yields
+an optimal approximation
+for the maximum coverage problem. Na\"{i}ve implementation of this
+greedy algorithm for best-$q$-guess, however, requires searching over
+exponentially many strings in $\strings$. We can exploit the fact that in our setting, a small number of correctors are used, and these correctors are efficiently invertible. Additionally, password weights are highly non-uniform. Thus it is efficient to enumerate all balls above a certain threshold weight, yielding the efficient implementation of Feige's greedy
+approximation algorithm specified in \figref{fig:attack-algo}. The algorithm intuition is this: as an invariant, in any iteration of the
+external while loop, all new balls (balls of $\pwtypo$) pushed onto
+the heap have max-weight password $\pw$, and
+hence total weight $\le b\cdot \pwprob(\pw)$. This observation enables a global selection of balls in weighted order.
+
+
+\iffalse
+Here we give an algorithm for more efficiently computing $\greedylambda_q$. We
+also discuss more the relationship between finding optimal query strategies and 
+the weighted max set cover problem. 
+
+Recall the greedy algorithm we sketched in 
+\secref{subsec:security}. The problem with that algorithm is it iterates
+over all the strings in the set $\strings$ which could be huge, and
+%the ball around many of those strings will have zero induced
+probability mass.  
+
+In our game setting let $\checker$ the checking algorithm which uses
+$\typoset$ correctors. The attacker assumes that the distribution of
+passwords is $\pwprob$.  Note if $\pwprob$ is indeed the same as the
+real password distribution then we call this attacker an exact-knowledge
+attacker, otherwise an estimating attacker.  For a submitted password
+$\pwtypo$, recall $\ball(\pwtypo)$ is the set of password that is
+checked by the checker.  We define another variable called the
+neighbor of a password $\pw$, which denotes the set of
+$\pwtypo\in\strings$ which contain $\pw$ in their balls.  Let
+$n = \max_\pw{|\nh{\pw}|}$, $b = \max_{\pwtypo} |\ball(\pwtypo)|$, and
+$A = \{\pwtypo \in \strings \:|\: \exists \pw\in\PW,\,
+\pwprob(\pw)>\varepsilon \mbox{ and } \pwtypo\in\nh{w}\}$.
+{\claim Given a checker $\checker$ that checks maximum $b$ passwords
+  for a submitted password, and a password will end up being be
+  checked by submitting at most $n$ different strings, the top $q$
+  guesses can be found within top $(q-1)nb+1$ strings of $A$ sorted
+  based on ball
+  weights}.  \\
+\Proof Let, $A'$ be the set of $(q-1)nb+1$ heaviest balls of A. Each
+guess can result in removing at most $b$ passwords from the set $P$,
+each of which, in turn, can affect the weights of maximum $n$
+different balls in $A'$. So, each guess can decrease the weights of at
+most $nb$ balls. So, after making $q-1$ guesses, at least one string
+$\pwtypo'$ will remain in $A'$ whose weight is not changed over the
+course of the algorithm, and by definition of $A'$, there cannot be
+any ball in $A\setminus A'$ that has higher weight than the ball
+$\pwtypo'$. So, the algorithm will never require to choose any string
+from $A\setminus A'$.
+
+The attacker can utilize the aforementioned claim to expedite the
+search for the best guesses drastically. The modified algorithm is
+given in~\figref{fig:attack-algo}. In the algorithm the external while
+loop, will be iterated at most $(q-1)bn$ times.  Another observation
+in the algorithm, that in the process of generating the potential
+guess list $A$, the attacker can emit a guess if the ratio of the
+heaviest ball in $A$ and the recently inserted password probability is
+more than $b$.  The idea is the any subsequent ball can have weight at
+most the weight of the current ball times the size of the maximum
+ball. So, if that product is less than the weight of heaviest ball in
+A, the heaviest ball will be the attacker's next best guess.  Note,
+the value of the $\varepsilon$ is clear from the algorithm.
+
+In the
+worst case (if the password distribution is close to uniform) then the
+time complexity will end up being checking all the passwords in $\PW$
+times $nb$.  But in practice, thanks to very skewed distribution of
+user chosen passwords, the attack will terminate much faster than
+that.
+
+\fi
+
+% \rcnote{Why? All new balls will have
+%   lower weight than $b\times$probability of current $\pw$.}
+% for w in B(wtilde_m)
+%    for wtilde in N(w)
+%
+%for w in {wtilde in A | \exists w in B(w_m) and wtilde in N(w)}
+%
+
+\begin{figure}[t]
+  \centering
+  \def\aindent{\hspace*{10pt}}
+  \fpage{0.4}{
+    \small
+    \underline{nextPw()}\\
+    \textnormal{Returns the passwords in $\PW$ in
+    decreasing order of their probability $\pwprob$.}\\[3pt]
+    \underline{FindGuesses$(q)$}\\[2pt]
+    /* $\ball(\pwtypo) =$ ball around $\pwtypo$, and  $b = \max_\strings |\ball(\pwtypo)|$ */ \\
+    /* $\nh{\pw} = \{\pwtypo \,|\, \pw\in\ball(\pwtypo)\}$ */\\
+    $P\leftarrow \PW$\\
+    $A\leftarrow$ MaxHeap() \aindent /* val$(\pwtypo) = \pwprob(\ball(\pwtypo)\cap P)$ */\\
+    $g\leftarrow \phi$; \\
+    do $\{$ \\
+    \aindent $\pw \leftarrow \mbox{nextPw}()$\\
+    \aindent $\pwtypo_m \leftarrow A.\mbox{popmax}()$\\
+    \aindent while $\;\pwprob(\ball(\pwtypo_m)\cap P)\ge b\cdot\pwprob(\pw)\; \{$\\
+    \aindent \aindent $g\leftarrow g\cup \{\pwtypo_m\}$\\
+    \aindent \aindent $P \leftarrow P\setminus \ball(\pwtypo_m)$\\
+    \aindent \aindent foreach $\;\pwtypo \in \{\pwtypo\in A\,|\, \ball(\pwtypo)\cap\ball(\pwtypo_m)\cap P \ne \phi\}\;$\\
+    \aindent \aindent \aindent $A.\mbox{updateweight}\left(\pwtypo\right)$\\
+    \aindent \aindent $\pwtypo_m \leftarrow A.\mbox{popmax}()$\\
+    \aindent $\}$\\
+    \aindent $A.\mbox{heappush}(\pwtypo_m)$\\
+    \aindent foreach $\;\pwtypo \in \left(\nh{\pw}\setminus A\right)\; $\\
+    \aindent \aindent $A.\mbox{heappush}(\pwtypo)$\\
+    % \aindent \aindent if $\;A.\mbox{length}() > (q-1)nb\;$ $\{$\\
+    % \aindent \aindent\aindent $\pwtypo' \leftarrow A.\mbox{popmin()}$\\
+    % \aindent \aindent $\}$\\
+    % \aindent $\}$\\
+    \} while ($|g|<q$)\\
+    return $g$
+  }
+  \caption{Figure presents a greedy algorithm to compute the best $q$
+    guesses and thereby compute $\greedylambda_q$, for an attacker who
+    estimates the the password distribution with $\pwprob$. % If the
+    % estimated distribution matches with real distribution, we call the
+    % attacker as optimal attacker, otherwise estimating attacker.
+  }
+  \label{fig:attack-algo}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

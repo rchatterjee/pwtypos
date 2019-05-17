@@ -1,0 +1,590 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Modeling Typos and Password Checkers}
+\label{sec:formal}
+
+
+In the past sections we saw that typos account for a large fraction of login
+failures. This burdens users and can even cost companies money because users end
+up not engaging with their services. We've also seen how correcting passwords on
+user behalf can efficiently increase usability. The remaining question is
+whether one can do so securely. We now answer this question. 
+
+We start by giving a formal framework for typo-tolerant password checking, and
+show how to realize the checking schemes suggested by our studies above. We
+will also show, via what we refer to as the ``crossover theorem'' that one can
+often build typo-tolerant checking schemes for which there is \emph{no security
+loss}. This theorem depends upon the nature of the distribution of passwords 
+and so we finally turn to empiricism using password leaks to investigate show
+that typo-tolernace comes with insignificant security loss for the kinds of 
+passwords used in practice.
+
+%We will also introduce more subtle mechanisms, such as blacklisting of popular
+%passwords 
+
+%we give a framework for reasoning about and specifying typo-tolerant password checkers. 
+%We will formalize the notion of
+%a typo model, which captures the probability of particular errors
+%arising across a user population. We will then describe a design for 
+%typo-tolerance that takes advantage of a typo distribution model to efficiently
+%check for high-probability typos. Along the way we will define the threat model
+%and highlight the key issue with typo-tolerance:  the trade-off between
+%usability and security.
+
+\iffalse
+A distance measure $\dist$ is a function
+$\dist\Colon\PW\times\PW\rightarrow\R^+$.  We will often denote
+$\dist(\pw,\pwtypo)$ by $\dist_\pw(\pwtypo)$.  The neighborhood of
+$\delta$-close points of a password $\pw \in \PW$ is the set
+$\ball_{\dist,\delta}(\pw) = \{\pwtypo \;|\; \pwtypo \in \PW
+\textnormal{ and } \dist_\pw(\pwtypo) \le \delta\}$.
+When $\dist$ and $\delta$ are clear from context we will write simply
+$\ball(\pw)$ and call this the ball centered at $\pw$.
+\fi
+
+\subsection{Typos, balls, and neighborhoods}
+\paragraph{Typo model.} Let $\PW$ be the set of all passwords, i.e., strings
+over some alphabet $L$ up to a maximum length $\pwlength$. We might take
+$L$ to be the set of all printable ASCII characters and the maximum length $\pwlength$ to be
+sufficiently large to encompass user-selected passwords, e.g., $\pwlength = 64$. We associate with $\PW$ a
+distribution~$\pwprob$ that models the probability of user selection of
+passwords; thus $\pwprob(\pw)$ is the probability that a user selects a given password $\pw$. We assume for simplicity that passwords are independently drawn from~$\pwprob$. 
+
+A key feature of our approach is that we do not appeal to a lexicographic notion of distance (e.g., Levenshtein distance) to model typos. Instead, we rely on a simple, key observation: Some typos are more likely than others. Thus we reason about typos in terms of probabilities, rather than distances. Specifically, we let $\typoprob_{\pw}(\pwtypo)$ denote the probability that upon authenticating, a user with password $\pw$ types $\pwtypo$. (If $\pwtypo \neq \pw$ then $\pwtypo$ is a typo; $\typoprob_{\pw}(\pw)$ is the probability that the user makes no typo.) We write $\pwprob(P)$ to denote the aggregate probability on a set $P \subseteq \PW$ of passwords.
+
+For all $\pw \in \PW$, then, $\typoprob_\pw(\cdot)$  defines a probability space
+over $\PW$. That is, $\typoprob_\pw(\pwtypo) \in [0,1]$ for any $\pwtypo$ and 
+$\sum_{\pwtypo \in \PW} \typoprob_{\pw}(\pwtypo) = 1$. In practice, generally $\typoprob_\pw(\pw) > 0$, i.e., users will sometimes enter passwords correctly. Also, for many password pairs, $\typoprob_{\pw}(\pwtypo) \neq \typoprob_{\pwtypo}(\pw)$. For example, a user may mistype her password $\pw =$ ``Unlockme'' as $\pwtypo =$``unlockme'' as a result of accidentally failing to depress the SHIFT key, while a user whose password is $\pwtypo =$``unlockme'' is less likely to press SHIFT accidentally and capitalize the letter `u'.
+
+Implicit in our model is the simplifying assumption that typos depend only on a user's password $\pw$ and
+not, for example, on the user that typed them, the time of day, or other factors.
+As we will see, this assumption simplifies operationalization of typo
+tolerance models. As one example, modeling individual users' typo habits would require a server to record the user's typo history.
+While higher-accuracy correction for the user might then be possible, this feature would, of course, result in a more complex system. It could also leak password information: Recoding the fact that a user fails to capitalize the first character in her password leaks the fact that that character is a letter.
+
+\paragraph{Neighborhoods.} We define the neighborhood $\nh{\pw}$ of a password
+$\pw$ as the set of passwords that a user with $\pw$ may type in attempting to
+enter $\pw$. Thus $\nh{\pw} = \{\pwtypo \,|\, \typoprob_{\pw}(\pwtypo) > 0\}$. 
+
+Some passwords in $\nh{\pw}$ may have very low associated probabilities,
+reflecting typos that rarely occur in practice. In this paper, we focus on and
+characterize common typos, so a more restrictive definition of neighborhoods is
+helpful. We define a {\em mutation} $\mut: \PW \rightarrow \PW$ as a (possibly
+randomized) function that models a specific form of typo. For example, $\mut$
+might flip the case of the first letter in $\pw$, modeling the form of typo in
+the example above that transforms $\pw =$ ``Unlockme'' into $\pwtypo
+=$``unlockme.'' 
+
+Let $\mutset = \{\mut_0, \mut_1, \ldots, \mut_{a-1}\}$ denote a set of $a$
+mutations, where $\mut_0$ is specially designated as the identity function
+(modeling correct entry of a password). We let $\newnh{\pw} =
+\{\mut_i(\pw)\}_{i=0}^{a-1}$ denote the {\em mutation-set neighborhood} induced
+by the set $\mutset$ of mutations. This restricted definition of a neighborhood
+is helpful in reasoning about common typos. We use the term ``neighborhood''
+rather than ``mutation-set neighborhood'' where the context is clear.
+
+\paragraph{Balls.} We define the {\em ball} of a password / typo $\pwtypo$ as
+the set of passwords $\ball(\pwtypo) = \{\pw \,|\, \pw \in \PW \mbox{ and }
+\typoprob_{\pw}(\pwtypo) > 0\}$.  Given a submitted password $\pwtypo$,
+therefore, $\ball(\pwtypo)$ is the set of passwords $\pw$ that a user {\em might
+have meant to type when actually entering $\pwtypo$}. 
+
+A ball may be thought of as the inverse of a neighborhood: If $\pwtypo \in
+\nh{\pw}$, then $\pw \in \ball(\pwtypo)$, and vice versa. Note that a ball may
+lie outside the support of $\pwprob$: A password may never be registered by
+users but still shows up as a typo.
+
+Similarly, we may think of the inverse of a mutation as what we call a {\em
+typo-corrector}, a (possibly randomized) algorithm $\tcf$ that takes as input a
+password in $\PW$ and outputs a corrected password (also in $\PW$).  
+For instance, $\tcf$ might correct the example mutation above in
+which a user fails to capitalize a leading letter. In this case, if $\pw$ begins
+with a letter $\ell \in L$, $\tcf(\pw)$  capitalizes $\ell$ and outputs the
+result, while if $\ell$ is not a letter, $\tcf(\pw) \rightarrow \pw$. 
+
+Just as some mutations may be especially common, making it helpful to reason in
+terms of mutation sets, so typo-correctors may be especially helpful. In fact,
+we focus on typo-correction strategies that employ just a few select
+typo-correctors. We define a set of typo-correctors as $\tcfe = \{\tcf_0,
+\ldots, \tcf_{\chbudget-1}\}$, where $\tcf_0$ is specially designated as the
+identity function. We define the {\em typo-corrector ball}
+$\newball_{\tcfe}(\pwtypo) = \{\tcf_i(\pwtypo)\}_{i=0}^{\chbudget-1}$.  We use
+the term ``ball'' rather than ``typo-corrector ball'' where the context is
+clear, and also write $\newball(\pw)$, dropping the subscript $\tcfe$ where
+appropriate.
+
+\paragraph{\em Remark:} While
+$\pwtypo \in \nh{\pw} \Leftrightarrow \pw \in \ball(\pwtypo)$, of
+course it is {\em not} the case that
+$\pwtypo \in \newnh{\pw} \Leftrightarrow \pw \in
+\newball_{\tcfe}(\pwtypo)$
+for every $\mutset$ and $\tcfe$. Moreover, in practice some typos /
+mutations that occur relatively frequently in practice are hard to
+correct. This is true, for example, of the mutation $\mut$ that omits
+the last letter of a password $\pw$ (which was among the top four most
+common typos observed in our MTurk experiments, as reported
+below). There is no effective general way to correct this typo, e.g.,
+no deterministic typo-corrector $\tcf$ that corrects this typo for all
+passwords.
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}[b]{.35\textwidth}
+  \includegraphics[width=1\textwidth]{images/neighborhoods.pdf}\vspace{-7mm}
+\caption{Neighborhoods for passwords ``Password!'' and ``Password1'' under example mutation set $\mutset$.}\label{fig:neighborhoods}
+\end{minipage}\qquad
+\begin{minipage}[b]{.35\textwidth}
+ \includegraphics[width=1\textwidth]{images/ball.pdf}\vspace{-7mm}
+\caption{Ball for password ``password1'' under example typo-corrector set $\tcfe$.}\label{fig:ball}
+\end{minipage}
+\end{figure*}
+
+\paragraph{Example.} We give a simple example for a mutation set $\mutset = \{\mut_0, \mut_1, \mut_2\}$ such that $f_1$ flips the capitalization of the first letter of a password and $f_2$ changes a terminal symbol to a number,  and a typo-corrector set $\tcfe = \{\tcf_0, \tcf_1, \tcf_2\}$ where $\tcf_1$ and $\tcf_2$ that respectively fix $\mut_1$ and $\mut_2$. Figure~\ref{fig:neighborhoods} show neighborhoods for passwords ``Password!'' and ``Password1,'' while Figure~\ref{fig:ball} depicts the ball for ``password1.'' Note that the two neighborhoods include ``password1'' in their intersection, which is why ``Password!'' and ``Password1'' are both in the ball for ``password1.''
+
+\subsection{Password checkers}
+A password checker consists of two algorithms:
+
+\begin{itemize}
+\item $\register$ is a (possibly randomized) password registration function. It takes as input a password $\pw$ and outputs a string $s$ that may, for example, be the output of a password hashing scheme like scrypt. 
+\item $\checker$ is a (possibly randomized) password verification function. It takes as input a password $\pwtypo$ and a stored string $s$, and outputs a boolean value, either $\accept$ or $\reject$.
+\end{itemize}
+
+More generally one might return a value
+in $[0,1]$ which acts as a confidence in how close is $\pwtypo$ to the
+registered password. This would be useful in systems that combine multiple
+contextual authentication signals to make an authentication decision. We will
+focus on the boolean case, but our techniques extend in natural ways
+to confidence values (e.g., by returning $\typoprob_\pw(\pwtypo)$).  A
+password checker is deterministic if $\checker$ is deterministic.
+
+We measure utility of a typo-tolerant checker by the probability that
+the checker outputs true for entered passwords, including some
+typos. Formally, the acceptance utility is equal to
+$\utility = \Pr[\ACC(\checker)\Rightarrow \true]$, where $\ACC$ is the random
+variable defined by the output of the pseudocode experiment described
+in \figref{fig:acc-security}. There $\getpwp$ means sampling from the
+set according to $\pwprob$, and $\gettypo$ means sampling from the set
+according to $\typoprob_\pw$.  The game is (implicitly) parameterized
+by the scheme algorithms, the password distribution $\pwprob$, and the
+typo model $\dist$.
+
+\begin{figure}[t]
+\center
+\fpage{.20}{
+   \underline{$\ACC(\checker)$}\\
+   $\pw \getpwp \PW \next \pwtypo \gettypo \PW$\\
+   $s \getsr \register(\pw)$ \\
+   $b \getsr \checker(\pwtypo,s)$\\
+  Return  $b$
+}\hspace{0.1in}
+\fpage{.20}{
+\underline{$\ATT(\checker,\advA, q)$}\\[1pt]
+$\pw \getpwp \PW \next s \getsr \register(\pw)$\\
+$\advA^{\CheckOr}$\\
+Return $\win$\medskip
+
+\underline{$\CheckOr(\pwtypo,s)$}\\[1pt]
+$b \getsr \checker(\pwtypo,s)$\\
+If $(b = \true)$ then \\
+\myind $\win \gets \true$\\
+Ret $b$
+}
+\caption{(\textbf{Left}) Experiment for defining acceptance utility
+  for a typo-tolerant checking scheme $\register,\checker$.
+  (\textbf{Right}) Security game for online guessing attacks.}
+\label{fig:acc-security}
+\end{figure}
+
+An \emph{exact checker} is one for which $\checker(\pwtypo,s)$ never outputs one
+when $\pwtypo \ne \pw$ yet $s\getsr \register(\pw)$.  In practice of course,
+exact checkers actually have a non-zero, but cryptographically small probability
+of false acceptance (for typical hash-function-based checkers, this small
+probability is equal to the probability of having found a collision in the hash
+function).  We will throughout ignore this false acceptance probability.  We
+note that the acceptance utility of an exact checker will always be less than 1
+assuming that there exist $\pw$ and $\pw'$ for which $\pwprob(\pw) > 0$ and
+$\typoprob_\pw(\pw') > 0$. That is, the probability of typos is higher than zero.
+
+\paragraph{Typo-tolerant checkers.} We will primarily focus our 
+attention on building typo-tolerant checkers that {\em relax} the checks made by an
+existing exact construction. Let $\exregister, \exchecker$ be the algorithms of
+an exact checker. Then an associated relaxed checker $\checker$ has the same
+registration algorithm $\register = \exregister$, but is not exact, i.e., $\checker \neq \exchecker$.
+Specifically, our approach will be to design a function $\register$ that individually checks each of {\em multiple candidate
+passwords} in a set $S$ using $\exchecker$, where elements of $S \subseteq \ball(\pwtypo)$ represent possible typo corrections to a submitted password $\pwtypo$.
+
+Relaxing an exact checker is a desirable approach to typo-tolerance
+for two main reasons. First, it means that modifying a system to
+become typo-tolerant can be done just by deploying a new checking
+algorithm that works with previously registered passwords.  For
+example registration may use a password hashing scheme like
+scrypt~\cite{percival2015scrypt} or argon2~\cite{biryukov2015argon}, or use
+a password onion construction that combines password hashing with an
+off-system crypto service~\cite{everspaugh2015pythia}.
+
+Second, from a security perspective, it implies that  compromise of the password
+storage has the same effect as for the legacy system.  In particular brute-force
+cracking attacks given~$s$ will work precisely as well as before. Of course,
+should the typo-tolerant $\checker$ algorithm be very complex to implement, it might increase the likelihood of software implementation
+vulnerabilities.  For this reason, we consider simple-to-implement relaxed checkers.
+We emphasize that security could still be diminished by the adoption of relaxed checking, due to remote
+brute-force attacks, a subject we will investigate in detail below.
+
+Of course, relaxing an exact checker does come with limitations. We must run $\exchecker$ against each of the elements of the candidate set  $S \subseteq \ball(\pwtypo)$ until a match is found or none is found and $\pwtypo$ is rejected.\footnote{We note that this can be
+  viewed simply as the standard brute-force construction of an error
+  correction code from an error detection code.} As $\exchecker$ is designed to be
+computationally expensive to thwart offline brute-force guessing attacks, this process may be slow if $|S|$ is large. We will show that one can significantly increase acceptance utility using a small set $S$ and thus few invocations of
+of $\exchecker$ beyond the single one necessary to achieve perfect
+correctness.
+
+In \apref{sec:secure-sketches} we discuss some natural approaches to
+typo-tolerant systems that use cryptographic constructions such as
+secure sketches, but note that unfortunately these do not appear to
+provide sufficient security in the face of server compromise.
+
+\paragraph{A utility-optimized relaxed checker.} Let $pw$ denote the true password selected by a user. Then for a  submitted password (potential typo) $\pwtypo$, it is the case that $\Prob{pw = \pw \,|\, \pwtypo} = (\typoprob_{\pw}(\pwtypo) \pwprob(\pw)) / (\sum_{\pw'} \pwprob_{\pw'}(\pwtypo))$. Thus, for a given $\pwtypo$, see that $\Prob{pw = \pw \,|\, \pwtypo} \varpropto \typoprob_{\pw}(\pwtypo)\pwprob(\pw)$.
+
+Suppose, then, that the checker designer has perfect knowledge of the distributions $\pwprob$ and $\typoprob$. 
+Given a potential typographical error, i.e., $\pwtypo \gettypo \PW$, the following procedure to recover $\pw$ is possible. Order the set $\ball(\pwtypo)$ by nonincreasing value of $\typoprob_{\pw}(\pwtypo)\pwprob(\pw)$ and successively test each element of $\ball(\pwtypo)$ using $\exchecker$. If
+$\exchecker$ finds a match, output $\true$ and stop, else continue
+until $\ball(\pwtypo)$ is exhausted and output $\false$. Informally, this procedure is utility-optimal for a relaxed checker in the sense that, given $\pwtypo \gettypo \PW$: (1) It achieves $\utility = 1$ and (2) Among all possible relaxed checking procedures with $\utility = 1$, it achieves the minimum expected number of invocations of $\exchecker$.
+
+Unfortunately, this procedure is impractical for a number of reasons. First, it requires a potentially huge number $|\ball(\pwtypo)|$ of 
+invocations of $\exchecker$. Second, a checker designer in practice may not know $\pwprob$ and $\typoprob$ exactly, and may find it hard to estimate them for low-probability passwords or for all elements of $\ball(\pwtypo)$ (which may be large). Finally, as we have noted, there is a tension between utility and security in typo-tolerant password checking; it is not appropriate to optimize utility alone.
+
+\paragraph{Our strategy: Relaxed checking with typo-correctors.} Given the (intentionally imposed) high computational burden of invoking $\exchecker$, achieving a practical checker design requires that only a relatively small set of candidate passwords be checked using $\exchecker$. We focus in this paper on the simple strategy of using a fixed set $\tcfe$ of typo-correctors in relaxed checking. When a password $\pwtypo$ is submitted, $\checker$ uses $\exchecker$ to test the sequence of passwords $\tcf_0(\pwtypo), \tcf_1(\pwtypo), \ldots, \tcf_{\chbudget-1}(\pwtypo)$ in order. If a match is found, $\checker$ outputs $\true$ and halts. If all checks fail, it outputs $\false$. This approach generalizes industry practice (\`{a} la Facebook, Vanguard, etc., as noted above) and, as we shall show, achieves a good balance between utility and security. 
+
+\subsection{Security of relaxed checkers}
+\label{subsec:security}
+As discussed above, since we focus on relaxed checkers, attacks due to
+compromise of an authentication server, such as offline cracking
+attacks, are not affected by the change to typo-tolerance. The
+critical question, then, is the effect of typo-tolerance on online
+guessing attacks. 
+
+Let us precisely define the notion of an online attack. In \figref{fig:acc-security} we give a simple guessing game
+played between an adversary $\advA$ and a checker. The game $\ATT$ is
+implicitly parameterized by $\pwprob$ and the checker
+$\register,\checker$. The advantage of the adversary $\advA$ in
+guessing the password is measured as
+$\epsilon_\advA = \Pr[\ATT(\advA)\Rightarrow\true]$.  This security
+game models a vertical attack, where the attacker tries to compromise
+a randomly chosen user account; changing this security game to model
+horizontal attacks is straightforward.  
+
+First let us derive a bound on the optimal guessing attack given a
+certain query budget~$q$.  Recall that if the checker is exact, we
+have that $\epsilon_\advA \le \lambda_q$ for any $\advA$ making at
+most $q$ queries where $\lambda_q = \sum_{i=1}^q \pwprob(\pw_i)$ 
+for $\pw_1, \pw_2, \ldots$ in order of decreasing probability, i.e.,
+that $\pwprob(\pw_i) \ge \pwprob(\pw_j)$ for $i < j$.  
+
+Given a relaxed checker, in submitting a password guess $\pwtypo$, an
+attacker induces checking on {\em all of the passwords in
+  $\newball(\pwtypo)$}. We assume that given a $\pwtypo$, the attacker
+can compute $\newball(\pwtypo)$. Intuitively, then, the optimal
+strategy for an attacker for the game $\ATT(\advA,q)$ is to
+iteratively guess the password $\pwtypo$ whose ball
+$\newball(\pwtypo)$ has the largest aggregate probability over
+passwords in $\PW$ not yet checked during the game.
+
+More precisely, the strategy is as follows. Initialize a set
+$P \gets \PW$ of possible passwords. Then repeat the following until
+the query budget $q$ is exhausted. Guess a password $\pwtypo$ that
+maximizes $\pwprob(\newball(\pwtypo) \,\cap\, P)$. If the query
+succeeds, then the game is won; otherwise set
+$P \gets P \setminus \newball(\pwtypo)$ and repeat.
+
+Let the probability of success of this attacker be denoted by
+$\fuzzlambda_q$. For $q=1$, we simply have
+$\fuzzlambda_1 = \argmax_{\pwtypo \in \PW}
+\pwprob(\newball(\pwtypo))$.
+In other words, for $q=1$, an optimal attacker simply guesses the
+password $\pwtypo$ whose ball has the highest aggregate probability,
+i.e., for which $\pwprob(\newball(\pwtypo))$ is maximized. This
+guessing strategy is analogous, in an exact-checking setting, simply
+to guessing the most probable password. We observe that
+$\fuzzlambda_1$ as defined here coincides conceptually with the fuzzy
+min-entropy notion of Fuller et al.~\cite{fuller2014fuzzy}.
+
+It is easy to see that this is optimal, meaning
+$\epsilon_\advA \le \fuzzlambda_q$ for any $\advA$ making at most $q$
+queries.  We can prove this in the following way. The optimal set of
+$q$ guesses also contains optimal set of $q-1$ guesses for any
+$q\ge 1$, so in other words. We have shown that $\fuzzlambda_1$ is
+optimal. The, only thing remains to show is that if
+$\fuzzlambda_{i-1}$ is optimal then, $\fuzzlambda_i$ is also optimal
+for any $i\le q$. The attacker, at $i$-th iteration picks the password
+that increases its success probability maximally, and as we assumed,
+the previous $i-1$ guesses were optimal, i.e., $\fuzzlambda_{i-1}$ is
+maximum advantage that an attacker can obtain with $i-1$ queries,
+$\fuzzlambda_{i}$ will also be maximum. 
+
+For this algorithm the time complexity is of the order of the size of
+set $\PW$. We propose an alternative approach to restrict the search
+space and improve the time complexity. Please see~\apref{sec:faster-attack}.
+
+\paragraph{Worst-case security loss.} 
+Let us start with the intuition for why typo-tolerance represents a potential 
+security risk.  Assume for simplicity that $\pwprob$ is uniform over $\PW$ and that $\checker$ is such that
+$|\newball(\pwtypo)| = \chbudget$ for all $\pwtypo$. Then moving to the typo-tolerant checker can increase the
+probability of success of an online brute-force attacker (whether horizontal or
+vertical) by a factor of $\chbudget$. Formally, 
+$\fuzzlambda_q = \chbudget \lambda_q$ for all $q$ such that there exist $q$ disjoint balls.
+
+It is tempting to conclude that typo tolerance will \emph{always} result in a
+factor $\chbudget$ decrease in security. But this conclusion is too hasty:
+$\pwprob$ is not uniform in reality and, in particular, passwords with high
+mass are sparse in the universe $\PW$. Sparsity matters since a high
+$\fuzzlambda_q$ depends intimately on finding passwords that are typos of many
+high-probability passwords. 
+%Let us look at another artificial example where there is in
+%fact \emph{no} security loss. 
+
+%\paragraph{The crossover theorem.} 
+\paragraph{Free corrections theorem.} 
+%While the artificial example above gives a worst-case bound on security loss, it
+%is quite conservative and bears little on security in practice: human-chosen 
+%passwords are not uniformly random. 
+We would ideally like to have typo-tolerant checkers that
+enjoy \emph{free corrections}. This means that  
+its security is equivalent to the security of an exact checker.  
+It is easy to come up with artificial distributions 
+which admit free corrections of all typos. Specifically a distribution for
+which no password's neighbor is in the ball of another password. 
+
+Unfortunately, real password distributions do not enjoy this property. For
+example, in the RockYou password leak and taking $\topfive$ as the set of
+corrections to apply, one has significant overlap even amongst the  top 50
+passwords. We therefore ask: for the password distributions seen in practice, 
+can one achieve checkers with free corrections? The answer is yes as formalized
+by the following theorem.
+
+%hasIn particular, when no password's 
+%We show that for most natural distributions one can get corrections ``for free'', at least when it
+%comes to doing so without security loss. In words, the theorem below states that
+%one can always build a typo-tolerant password checker such that acceptance
+%utility increases over exact checking, yet the optimal advantage of an online
+%guessing adversary is only as good as it would be against exact checking. 
+
+
+\begin{theorem}[\textbf{Free corrections}] Fix $q > 0$, some password distribution
+$\pwprob$ with support $\PWset$, 
+a typo distribution $\dist$, and an exact checker $\exchecker$.
+If there exists $\pw \in \PWset$ with a neighbor $\pwtypo$ for which
+$\pwprob(\ball(\pwtypo)) < \pwprob(\pw_q)$,  then there exists a typo-tolerant
+checker~$\checker$
+for which $\ACC(\checker) > \ACC(\exchecker)$ and $\lambda_q = \fuzzlambda_q$. 
+\end{theorem}
+
+
+\noindent\emph{Proof:}
+Consider the following typo-tolerant checker. Upon input $\pwtypo$, it first
+checks whether the mass of the ball $p(\ball(\pwtypo)) > p_q$ where recall that $p_q$ is the
+probability mass of the $q\thh$ most probable password (under
+distribution~$\pwprob$). If it is larger, then only check $\pwtypo$ and do not
+attempt typo correction. If instead the mass of the ball is smaller than $p_q$,
+then check all passwords in the ball and accept the password if any match. Let
+$\checker$ be the checker just described. 
+
+Now we must prove two things about $\checker$. First that acceptance utility is
+higher than just exact checking.  By assumption we have that the there exists
+some password $\pw \in \PWset$ that has a neighbor $\pwtypo$ for which $0 <
+p(\ball(\pwtypo)) < p_q$. Because this ball's mass is less than $p(\pw_q)$,
+ $\checker$ will accept $\pwtypo$ while the exact checker will not. 
+Thus $\ACC(\checker) \ge \ACC(\exchecker) + \pwprob(\pw)\cdot \dist_\pw(\pwtypo)$. 
+
+%be that it includes a password $\pw \in \ball(\pwtypo)$ with $\pw \ne \pwtypo$
+%and $\pwprob(\pw) > 0$.  This password will also have $\pwtypo$ corrected under
+%$\checker$, since $\ball(\pwtypo) < p_q$. Noting that the exact checker will
+%never correct this typo, we have that 
+
+
+
+Now we prove the other part, that $\lambda_q = \fuzzlambda_q$. Assume for
+contradiction that instead ... \fixme{Rahul you want to fill this in?}
+\qedsym\\
+
+A few comments are in order.  As $q$ increases, the mass of the neighbor's ball
+must decrease for the proof to work. For relevant ranges of $q$ (e.g., $q \le
+1000$), this condition will however be met for the highly-skewed password
+distribution seen in practice. \tnote{do we want some empiricism here?} An
+example setting that does not meet the conditions of the theorem is the
+artificial one given above that has uniformly distributed passwords. %We note
+%that this assumption is not strictly necessary for free corrections: one can
+%give (again artificial) distributions which can have free corrections but do not
+%meet the conditions. 
+
+The typo-tolerant checker given in the proof may be inefficient (should balls be
+very large), but it is easy to see that the checker can be made efficient by
+only handling an efficiently checkable portion of any ball.  As long as that
+portion contributes to improving acceptance utility, one still gets free
+corrections.
+
+A final issue is that the construction within the proof would be, as presented,
+subject to timing attacks that leaks partial information about what password a user
+entered to network attackers. This can be fixed easily by implementing the typo
+checker in a constant-time fashion.
+
+\iffalse
+In the special case that no two password neighborhoods overlap and thus $|\ball(\pwtypo)| = 1$ for all $\pwtypo \in \PW$, it is possible to design a scheme $\checker$ with no security loss relative to the exact checker $\exchecker$ and with $\utility = 1$.
+
+For any scheme $\checker$ (with $\utility \leq 1$), when no ball contains two passwords in the support of $\pwprob$, there is no security loss. It is easy to see that this is the case: Any password $\pwtypo$ submitted by an attacker results in at most one invocation of $\exchecker$ on a password that a user might select. In fact, there is no security degradation provided that $\fuzzlambda_q = \chbudget \lambda_q$. This much weaker condition is satisfied, for example, if the $q$ balls with the highest aggregate probabilities have the same probabilities as the $q$ most probable passwords. 
+
+Intuitively, balls will not contain two distinct passwords $\pw, \pw'$ provided that these passwords do not have overlapping neighborhoods, a condition that occurs when the passwords are sufficiently ``distant'' from one another. Specifically, there should be no typo that maps $\pw$ onto password $\pwtypo$ and other typo that also maps $\pw'$ onto $\pwtypo$ such that $\checker$ corrects both typos. High lexicographic distance often achieves this condition in practice.
+
+\iffalse
+no two neighborhoods overlap,
+typo tolerance comes at no security loss. In detail, consider a
+distribution $\pwprob$ and typo model $\dist$ such that for any
+$\pw,\pw'\in \PW$ with $\pwprob(\pw) > 0$ and $\pwprob(\pw') > 0$
+there does not exist a $\pwtypo$ such that both
+$\similar_\pw(\pwtypo) >0 $ and $\similar_{\pw'}(\pwtypo)> 0 $.  In
+words, this just means that there exist no points in common between the
+neighborhood of any $\pw$ and $\pw'$.  Then one can in theory build a
+checker that achieves acceptance utility 1 and for which
+$\fuzzlambda_q = \lambda_q$ for all~$q$.
+\fi
+
+This observation was made (using less formal reasoning) in prior
+treatments on computer-generated
+passwords~\cite{shay2012correct,techreport}, where one can have the
+system arrange for all chosen passwords to be sufficiently ``distant''
+from one another with respect to a reasonable typo model. But for
+user-generated passwords it is unlikely that one gets such a
+situation.
+
+So we have two extremal, but artificial, examples of
+security. Security loss could be as bad as a factor of $\chbudget$. It
+could also come at no loss. The truth will be somewhere in between,
+and here we must turn to empiricism. To start, we do a brief
+exploration of the structure of real user passwords under a typical
+distance measure, Damerau-Levenshtein distance.
+
+\fixme{We will consider heuristics that enforce the condition that a correction ball contains only one  high-probability password. A simple one is this: If a known high-probability password is encountered while iterating through typo-correction functions, halt.}
+
+\paragraph{Damerau-Levenshtein distance} Damerau-Levenshtein distance
+is a widely used distance metric for spelling errors. This metric
+evolved from the work by Levenshtein~\cite{levenshtein1966binary} and
+Damerau~\cite{damerau1964technique}.  DL distance between two strings
+is the minimum number of edit operations required to convert one
+string into the other. Here allowed edit operations are insertion,
+deletion, substitution and transposition.  Using simple dynamic
+programming we can efficiently calculate DL distance between two
+strings.  For our analysis we have used case independent DL distance,
+where we compute the DL distance after converting both the string to
+lower case.
+
+
+\subsection{Sparsity of 1-DL Typos in Rockyou}
+\fi
+
+
+
+
+\tnote{There is a bunch of stuff commented out in latex below and in model.tex}
+
+\iffalse
+
+\bigskip
+\bigskip
+\bigskip
+
+There are three main component of a typo tolerant password checking system. 
+First, a fuzzy equality metric, that tells what is the probability that two
+strings could be typo of each other.
+
+
+\paragraph{Typo-tolerant password checking.}  
+Typo tolerant password checking is the accepting passwords that are withing some
+distance from the original password. Here, the distance is a function that maps
+a pair of strings onto a real number.
+
+\rcnote{
+\begin{itemize}
+\item Define {\em fuzzy-guess rank}, and {\em fuzzy-$\beta$ success rate}.
+\item Formal definition of typo tolerance? \\
+  The function {\tt fuzzy\_equal($w, \hat{w}$)} is an abstract function
+  implemented by the servers that decides whether $\hat{w}$ can be treated as a
+  proxy for $w$ for authentication or not.  In general this is just an equality
+  checking, we can extended it to more flexible checks, e.g., treats the strings
+  as equal if the DL-distance between the strings are under some limit.
+\end{itemize}
+}
+
+
+
+
+\rcnote{random thoughts follow..}  However for typographical error correction we
+have seen (shown in later section of the paper) several issues with simple edit
+distance. Firstly, ``password'' and ``PASSSWORD'', differ by DL distance of 8,
+and ``password'' and ``mypass12'' are also differ by DL distance 6, but it is
+easy to see that ``PASSWORD'' is a more likely to be a typo of ``password'' than
+``mypass12''. The solution to this problem is using, weighted edit distance,
+where every edit operation may incur different cost instead of unit cost. So, we
+can set substitution of a capitalized version of a character to lower weight,
+while substitution of a completely different character to a higher weight. But
+in weighted edit distance, the problem is how to decide on an optimal weight
+given a set of word-pairs that are likely to be typo of each other. There are
+approximate solution for this problem~\cite{hauser2007unsupervised}.
+
+We propose a new approach for this problem. Most of the typo occurs due to
+pressing different sequence of keys than what it should be. Given a string and a
+keyboard layout we can find the optimal sequence of key presses that is required
+to type that string. Now to find the distance between two strings we can convert
+both the strings into two key press sequences and then compute the DL distance
+on those sequences. E.g., ``PASSWORD'' will be converted to
+``\caps -p-a-s-s-w-o-r-d'', and ``password'' will be converted to
+``p-a-s-s-w-o-r-d''. So, distance between ``PASSWORD'' and ``password'' will be
+only 1, while distance between ``password'' and ``mypass12'' will be 8. Also,
+``AnyPass1!'' will be translated to ``\shift -a-n-y-\shift -p-a-s-s-1-\shift -1''.
+The password ``PASSword123!@\#'' will be translated to ``\caps -p-a-s-s-\caps
+-w-o-r-d-1-2-3-\shift -1-\shift -2-\shift -3''
+\rcnote{This idea may be useful, wrote down as free writing. Will give deeper
+  thought later, as for now, case independent edit distance is enough.}
+
+\paragraph{Preliminary analysis on RockYou}
+To understand the effect of typo tolerance on security, we performed a small
+experiment with the publicly available password leaks, such as RockYou, phpBB,
+Yahoo and Myspace.  In this experiment, for each of the leaks, we assume the
+accounts in the database of the authentication server is the same as one the
+leak, and the server accepts a password against an user account if the entered
+password is withing 1 DL-distance of the original password.  This is a simple
+model for typo tolerance, and we are intentionally leaving the details of how
+one can implement this to focus on the issue of security.
+
+
+We define ball $B_{w}$ of a password as the set of passwords that will be
+accepted the authentication server in place of $w$.  Now if we assume that
+our hypothetical authentication server is populated with the RockYou user
+accounts, then for each passwords in RockYou the server accepts the ball of that
+password.  In this case, the goal of an attacker is to find the set of strings
+(these strings do not necessarily belong to the set of passwords in RockYou),
+whose cumulative probability mass of the balls they belong to is maximum.
+
+
+A naive approach to create all password variants for each ball will be super
+inefficient.  The size of the ball of a password of length $\ell$ over the
+alphabets $\Gamma$, can be as much as \fixme{$4*|\gamma|*\ell$}. Without
+creating all these balls, optimal guesses can not be found and we cannot compute
+the fuzzy-$\beta$ success rate.
+
+
+
+
+
+[Discuss speedup for breadth-first guessing attack]
+
+
+\fi
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
+

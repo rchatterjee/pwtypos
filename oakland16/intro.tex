@@ -1,0 +1,203 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+
+Despite repeated calls for their demise (cf.~\cite{bhos12}),
+human-chosen passwords remain the primary form of user authentication
+on the Internet.  A long line of investigation has shown that
+passwords are easily predicted by attackers
+(cf.~\cite{florencio2007lsw,bonneau12b,ur2015added}), that strength meters
+offer limited improvements to security~\cite{ur2012does},
+that password expiration does not increase
+security~\cite{zhang:2010:security}, and that 
+users have a hard time remembering complex
+passwords~\cite{shay2012correct,shay2014can,bonneau2014towards,ur2012does}.
+
+A handful of works have pointed out that complex, user-chosen
+passwords are not only more difficult to remember, but also more
+difficult to
+type~\cite{keith2007usability,keith2009behavioral,shay2014can}.  But
+these studies are quite limited, investigating neither the prevalence
+nor form of typos across a wide user base.  Additional anecdotes arise
+in industry, where a few web services seem to intentionally allow a
+small set of
+typos~\cite{muffett15,zdnet2011Facebook,vanguard15v,vanguard15i}.
+Facebook currently accepts a password whether or not the user
+capitalizes the first letter of their password (assuming it starts
+with a letter), and whether or not they have the caps lock on. But no
+information about why they do this has been published, and, more
+importantly, whether this degrades security is unclear.
+
+%Additionally, Facebook currently accepts a submitted
+%password whether or not the user capitalizes the first letter of
+%their password (assuming it starts with a letter), and whether or not they have
+%the caps lock on~\cite{muffett15}. 
+
+%Such typo-tolerance 
+%but
+%to date there have been no studies focused on the extent and nature of typographical errors
+%(typos) and whether password login systems can be augmented to help users with them.
+%usability such as the c with notable
+%exceptions~\cite{keith2007usability,keith2009behavioral,shay2014can,techreport} discussed later, 
+
+We provide the first detailed treatment of password typos.  We start
+by measuring empirically the rates and nature of typos made by users.
+We perform preliminary experiments with Amazon Mechanical Turk (MTurk)
+in which we task human workers with transcribing passwords drawn from
+the RockYou password leak.\footnote{We submitted our experiment design
+  to our IRB, but received an exemption for lack of collecting any
+  PII.}  This does not perfectly model password entry (among other
+reasons, because the passwords were not the workers' own), but allows
+us to collect over 100,000 submissions in short order across thousands
+of workers. Our experiment provides important, basic insights into
+common typographical errors. We find that a large number are proximity
+errors (hitting a key near the intended one). Several other common
+ones are what we call ``easily-correctable'' typos: they can all
+be corrected by simple functions applied to the submitted, incorrect
+password. Examples of the latter include accidentally hitting the caps lock, implementing incorrect first-letter
+capitalization, adding a character to the front or end of a password,
+and missing the shift key when entering a symbol at the end of a
+password. These easily-correctable typos account for 20\% of the typos
+observed in our MTurk study, an observation that serves as a key basis
+for our work.
+
+%Beyond these, revealing that caps lock and first-letter capitalization accounts for
+%15\% of typos made and other common errors include adding a character to the end of
+%the password , adding one to the beginning, and symbol-to-number mistakes.  We
+%use these results to enumerate common typos that can be easily corrected, the
+%capitalization errors just mentioned are all examples.
+
+Armed with correction functions for easily-correctable typos, we
+instrument Dropbox's production, Internet-scale login infrastructure.
+This permits measurement of typo prevalence at scale without
+changing the way Dropbox currently performs user authentication and with no
+increased risk of exposure of passwords (i.e., we never store passwords or 
+any information that could help in guessing them).
+While we cannot
+reveal the absolute number of requests seen during measurements for reasons of
+confidentiality, we note that Dropbox has hundreds of millions
+of customers and all user accounts were instrumented.  We first
+perform a 24-hour measurement to identify login attempts involving the
+easily-correctable, common typos surfaced in the MTurk study.  We find
+that over 9\% of failed login attempts result from just one of three
+easily-correctable typos (caps lock, first letter case, and adding a
+character to the end).  We perform a subsequent 24-hour experiment to
+analyze the impact of correcting just these top three typos. This
+experiment reveals that~{\em 3\% of all users failed to login, but
+  could have done so given correction of one of these three
+  easily-correctable typos}. Many other users %that logged in
+%successfully 
+could have avoided multiple login attempts, significantly
+decreasing the time required to login. In summary, our measurements suggest that easily-correctable
+password typos represent a significant burden on users and businesses.
+
+%result in a median of \fixme{15
+%seconds} of delay between first and final successful login attempt, with
+%\fixme{5\%} of users that made a typo being turned away for hours at a time. We
+%emphasize that this study only checked a small number of typos, but even so they
+%represent a painful burden on users.
+
+All of this suggests typo-tolerance could bring substantial usability benefits.
+What remains is to determine if such typo-tolerance necessarily degrades
+security. The intuition would be that it does, because guesses might cover
+multiple possible passwords. We show, however, that this intuition is flawed.
+%The key question then becomes: Can this be
+%partially alleviated by correcting easily-correctable typos on users' behalf
+%without a substantial resulting security degradation.
+
+
+We provide a formal framework that enables principled investigation. We define
+\emph{typo-tolerant password checkers}, and among these a special class that we call 
+\emph{relaxed checkers}. Relaxed checkers are systems that start with an existing exact
+system (e.g., comparing salted bcrypt hashes or using an
+encrypted password onion~\cite{everspaugh2015pythia}). The system is ``relaxed'' through a modification that additionally searches a small space of corrections  to the submitted password. This search allows easy deployment of
+typo-tolerance, while ensuring that security in the face of server compromise
+is as in the exact checking case (since stored values remain
+unchanged). Thus we focus on analyzing online guessing attacks that
+seek to maximize their probability of success 
+by exploiting the extra typo checks.
+%Now for remote guessing attacks, the adversary's goal is to find strings to submit
+%that maximize its probability of successfully logging in. 
+%%point characterize the optimal attacker's guessing strategy for any given password
+%%distribution and typo correction mechanism.  
+%It turns out this is an NP-hard problem reducible to the weighted max cover set
+%problem, and the best approximation is to use a greedy algorithm that, in short,
+%determines the sequence of guesses for which each ``ball'' of checked passwords maximizes the probability
+%of the true password being checked. 
+
+
+% a metric called the fuzzy $q$-success-rate, 
+%which generalizes the $q$-success-rate
+%metric~\cite{boztas1999entropies,bonneau12b}.
+%and fuzzy
+%min-entropy~\cite{fuller2014fuzzy}. 
+%These measure the maximal probability of success in the first $q$ guesses against an account
+%for typo-tolerant (resp.~exact) checkers. 
+We prove a \emph{free corrections theorem}. It states that there exists an
+optimal, fully secure typo-tolerant checker for any desired set of
+corrections. Consequently: (1) The optimal remote attack up to some query
+budget $q$ is
+no more successful than the optimal attack against an exact checker and (2) No other
+checking scheme can improve the utility of typo corrections while maintaining no
+loss in security.  The key insight is that one can build a typo-tolerant checker
+that forgoes corrections in the rare cases when doing so will allow checking for
+multiple high-probability passwords.
+
+Unfortunately, the optimal checker underlying the free corrections theorem must
+be based on exact knowledge of the password distribution---an assumption unlikely to be 
+realizable in practice. We
+therefore explore the security of a number of practical typo-tolerant
+checkers, such as always correcting the top three typos, checking corrections
+only when they do not appear on a blacklist of common passwords, and a version
+of the optimal checker that uses the RockYou password leak~\cite{rockyou:2009} to estimate the
+password distribution. We then perform a number of simulations to show that
+these typo-tolerant checkers improve usability while remote guessing attacks
+improve negligibly, even in the worst case of attackers that somehow
+know the precise password distribution. For real attackers that estimate the
+distribution, our simulations suggest no
+improvement in online guessing attacks. 
+
+The contributions of this paper are the following:
+\begin{newitemize}
+\item We are the first to investigate the rate and nature of password
+typos made by users via measurement studies using Mechanical
+Turk and the production login infrastructure at Dropbox. Our work surfaces a small
+set of easily-correctable typos, such as capitalization errors, that alone
+prevent 3\% of users from logging in during the period of study. Correcting these few typos could therefore non-negligibly boost user access to the Dropbox service.
+% during a 24 hour period.\devd{I think we can delete the "during a 24 hour period", since this is a summary.}
+%
+\item We introduce a formal framework for typo-tolerant password checkers
+and prove a free corrections theorem that
+establishes the existence, in theory, of an optimal typo-tolerant password
+checker that has no loss in security over exact checking. 
+%
+% \rcnote{I think we should also add the optimal attack model as contribution}
+\item We introduce a number of practical typo-tolerant password checkers that are
+compatible with existing password storage systems. 
+Simulations show that these checkers can achieve no degradation in security yet 
+still significantly improve login success rates.
+\end{newitemize}
+Our focus is on web password ecosystems, but nothing about our 
+techniques is unique to this setting. Our typo-tolerant checkers could easily
+be integrated in other settings such as logging into a desktop or laptop
+computer, though measurements are probably warranted to understand what are the best
+typo corrections for these other settings. We leave this to future work.
+
+\paragraph{Immediate impact of our work.}
+In the course of this research, our results prompted Dropbox to deploy a caps
+lock indicator on their website's password login interface. This indicator is
+like the one already available in Apple OS X, but appears in all
+browsers. Preliminary results suggest that it reduces caps lock errors by
+about 75\%, and thus provides
+significant benefit. Unfortunately, it does not eliminate caps-lock errors nor
+assist with other sorts of common typos. So while our results in this paper have
+already had a practical impact, we hope that they will also fuel further
+advances in the mitigation of password typos.
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

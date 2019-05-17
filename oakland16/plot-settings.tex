@@ -1,0 +1,92 @@
+\newcommand{\plotsecurityfigure}[1]{
+  % \def{\lname}{#1}
+  \pgfplotstableread[col sep=comma]{images/policy-#1.csv}{\dbt}
+  \foreach \policy in {2} {
+    \begin{tikzpicture}[scale=0.5]
+      \begin{axis}[
+        every axis x label/.style={
+          at={(0.3, -0.2)},
+          anchor=west,
+        },
+        % ymin=0.0, ymax=4.0,
+        ylabel={Edits},
+        y axis style=blue!75!black,
+        xticklabels from table={\dbt}{edits},
+        xtick={0,1,...,11},
+        x tick label style={rotate=30, anchor=north east},
+        axis y line*=left,
+        axis x line*=bottom,
+        ylabel = {$\log_2{\fuzzlambda_q}$ (bits)},
+        xlabel={Mutations},
+        % legend entries={$q=1~~$,$q=10~~$,$q=100~~$,$q=1000~~$},
+        legend style={at={(0.0,1.2)},anchor=north west,legend columns=4,
+          cells={anchor=west},
+          font=\footnotesize,
+          rounded corners=2pt,},      
+        ]   
+        \addplot [red, mark=x] table [x expr=\coordindex, y expr=-ln(\thisrow{p\policy q1}/100.0)/ln(2.0)]{\dbt};
+        \addplot [blue, mark=triangle*] table [x expr=\coordindex, y expr=-ln(\thisrow{p\policy q10}/100.0)/ln(2.0)]{\dbt};
+        \addplot [green, mark=*] table [x expr=\coordindex, y expr=-ln(\thisrow{p\policy q100}/100.0)/ln(2.0)]{\dbt};
+        \addplot [magenta, mark=square*] table [x expr=\coordindex, y expr=-ln(\thisrow{p\policy q1000}/100.0)/ln(2.0)]{\dbt};
+      \end{axis}
+
+      \begin{axis}[
+        ymin=0.0, ymax=.5,
+        y axis style=red!75!black,
+        axis y line=right,
+        xticklabels={},
+        % legend entries={$\%$ increase in login},
+        ylabel = {Fraction of typos corrected},
+        legend style={at={(0.0,1.1)},anchor=north west,
+          legend columns=6,
+          cells={anchor=west},
+          font=\footnotesize,
+          rounded corners=1pt,
+        }
+        ]
+        \addplot[dashed] table [x expr=\coordindex, y expr=\thisrow{p\policy typofix}/100.0]{\dbt};
+        \label{img:typofix}
+        % \addlegendentry{$\%$ increase in login}
+      \end{axis}
+    \end{tikzpicture}
+  }
+}
+
+
+% argument #1: any options
+\newenvironment{customlegend}[1][]{%
+    \begingroup
+    % inits/clears the lists (which might be populated from previous
+    % axes):
+    \csname pgfplots@init@cleared@structures\endcsname
+    \pgfplotsset{#1}%
+}{%
+    % draws the legend:
+    \csname pgfplots@createlegend\endcsname
+    \endgroup
+}%
+
+
+
+% makes \addlegendimage available (typically only available within an
+% axis environment):
+\def\addlegendimage{\csname pgfplots@addlegendimage\endcsname}
+
+
+\pgfplotsset{
+  scale only axis,
+  % scaled x ticks=base 10:3,
+  % xmin=0, xmax=0.06,
+  y axis style/.style={
+    yticklabel style=#1,
+    ylabel style=#1,
+    y axis line style=#1,
+    ytick style=#1
+  }
+}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

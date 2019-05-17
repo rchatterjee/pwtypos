@@ -1,0 +1,136 @@
+\subsection{Complexity and Typo Likelihood} 
+\label{app:complexity}
+
+Our MTurk experiments revealed a significant initial finding regarding the frequency
+of typos. Typo rates in our study increased under the following three distinct
+metrics relating to password complexity.
+
+\paragraph{\em Lexical diversity in passwords:}
+One might suspect that more lexically diverse passwords---ones that
+include symbols, letters with different cases, numbers or some
+combination thereof---would be more prone to typos.  We define four character classes: upper case letters,
+lower case letters, digits, and symbols.  Now, based on how many of
+the four classes of characters are present within a password we can
+partition passwords into four buckets. For example, passwords
+containing characters from only one of the four classes are binned as
+bucket 1, passwords containing exactly two different classes of
+characters are bucket 2, etc.  In our first sample of 100,000
+passwords, there were very few lexically diverse passwords. RockYou has $<0.2\%$
+passwords with characters from all of the four character classes.
+So we sample with replacement 5,000 passwords for each bucket from
+the empirical distribution of passwords in RockYou restricted to the
+passwords corresponding to the bucket. We performed the same
+typing experiment as described before but with new HITs created from these
+newly sampled passwords. In the left graph of~\figref{fig:complexity-typo}, we present the percentage of passwords in each bucket that were mistyped.
+
+
+%That said, trends we discuss
+%below hold as well when restricting attention to just unique passwords. 
+
+%\rcnote{Some discussion for this result. This is quite counter intuitive}
+
+% Obviously this is biased by the way we sampled, which is
+% according to RockYou --- more frequently typed passwords were typed more often.
+% If one normalizes the frequencies of typos for a particular password 
+% by the number of times it was typed, a different story emerges. This is shown in
+% the right of \figref{fig:popularity-typo}. We warn, however, that most of these
+% results are not significant in that most passwords were only typed a single
+% time. 
+
+%We can see that the bulk of passwords
+%for the passwords grouped by their frequency of occurance in the 
+%RockYou dataset. \tnote{Insert analysis}
+%%%%%%%%%%%%%%%%Typing speed, time, length and typo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}[t]
+\gamesfontsize
+  \begin{center}
+%    \hspace{0.3in}
+    \begin{tikzpicture}[scale=0.4]
+      \begin{customlegend}[
+        legend columns=2,
+        legend style={
+          align=left,
+          draw=none,
+          column sep=2ex,
+          font=\fontsize{8}{4}\selectfont
+        },
+        legend entries={Samples~~~, Typos}]
+        \addlegendimage{ybar, ybar legend, blue!50}
+        \addlegendimage{mark=*,red!90}   
+      \end{customlegend}
+    \end{tikzpicture}
+  \end{center}
+  \vspace{0.01in}
+  \centering
+  \plotmturk{\complexitytypotable}{cmplcl}{xlabel={\large
+      Lexical diversity}, ylabel={\large \% of samples in each
+      bucket}}{totalsample}{ylabel={},
+    ymax=0.20}{typo}{}{}
+%   \hspace{-0.3in}
+  \plotmturk{\lengthtypotable}{length}{xlabel={\large Password length}, ylabel={}}{totalsample}{ylabel={}, ymax=0.2}{typo}{}{}
+ \plotmturk{\populartypotable}{freqrange}{xlabel={\large Popularity (RockYou frequency)}, ylabel={}}{totalsample}{ylabel={\large Probability of typo}, ymin=0.01, ymax=0.10}{typo}{}{}
+
+
+%  \plotmturk{\typingtimetypo}{typingtime}{Avg.~time required to type (sec)}{totalsample}{}{typoa}{}{}{}  
+%   \hspace{-0.3in}
+ \caption{Three experiments showing typo frequency relative to various partitions of passwords into buckets. Bucket size is indicated on the left of each figure, and corresponding typo rates on the right. {\bf(Left)}   Passwords are partitioned into four buckets based on
+  diversity of character types. For each bucket we report
+    the percentage of samples (blue bars) that fall in that bucket and
+    what fraction of those samples are mistyped (red line).
+{\bf (Middle)} Passwords are categorized into buckets by increasing order of length.  {\bf(Right)} 
+    Passwords are assigned to buckets by decreasing
+    frequency (increasing unpopularity) in RockYou. Bucket frequency ranges are selected so that each bucket has roughly an equal
+    number of samples. %The frequency ranges that we considered include 
+   % \{$\le 1$, $2-11$, $12-211$, $\ge212$\}.   
+  }
+  \label{fig:complexity-typo}
+  \label{fig:length-typo}
+  \label{fig:popularity-typo}
+\end{figure*}
+
+
+\paragraph{\em Password length:}
+We divide passwords into five groups based on their lengths, namely
+$\le5$, 6--7, 8--9, 10--11, and $\ge12$. For each class, we compute
+the percentage of samples that lie in that class, along with the
+percentage of passwords in those samples that were mistyped.  In the
+middle graph of \figref{fig:length-typo} we show these numbers for
+each of the length groups. As one might expect, typo likelihood grows with password length. 
+
+\paragraph{\em Password popularity:} We sort the list of sampled
+passwords for our MTurk experiment based on their frequency counts in
+the RockYou leak. (Ties were broken alphabetically.) We then split the
+passwords into four buckets, adjusting their corresponding frequency
+ranges to ensure that buckets are of roughly equal size. (Some
+unevenness was unavoidable, as many passwords occur only once in the
+Rockyou leak.) For each bucket, we present the number of mistyped
+passwords in the right graph of \figref{fig:popularity-typo}.  We can
+see the clear trend that passwords that are popular among RockYou
+users are more likely to be typed correctly.  For example, passwords
+used by more than 211 users are 1.5 times more likely to mistyped than
+those used by only one user.
+
+
+\paragraph{Discussion: password typing complexity.}  As noted above,
+lexical diversity, length, and popularity are related
+metrics. Inspection of the passwords within the various buckets used
+in the charts of \figref{fig:popularity-typo} reveals that there is
+significant overlap between them. As one example, 18\% of the
+passwords with lexical-diversity bucket 4 {\em both} have length
+$\ge 12$ {\em and} are unpopular ($f = 1$).
+
+The three metrics together highlight different
+aspects of the underlying and intuitive trend: some passwords are more
+difficult to type than others. It appears, moreover, that typos are more likely to
+surface in harder-to-guess passwords. Consequently, typo correction
+could help encourage users to adopt stronger passwords by easing the
+use of such passwords. We leave rigorous study
+of this hypothesis to future work, but note that it offers further
+potential motivation for our work.
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

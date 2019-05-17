@@ -1,0 +1,201 @@
+\subsection{Utility improvement of the checkers}
+
+%Typo corrector sets provide a checker with possible ways to try to
+%correct a typo.  Though choosing a large number of correctors can enable 
+%correcting a larger fraction of typos, it might also incur
+%higher security loss with the heuristic checkers here. 
+In \secref{sec:mturk} we found corrector sets whose utility was confirmed by our experiments with
+Dropbox. It could be, however, that other choices
+perform better for $\checkerbl$ and $\checkerapprox$. 
+In order to assess utility, we build a simulation model as follows. 
+
+Recall that in \secref{sec:formal} we defined a simple measure of
+utility via the experiment $\ACC$. This measures the probability of
+login success when a user chooses a password and later types it to log
+in a single time. To measure this empirically, we must fix estimates
+of $\pwprob$ and $\typoprob$. For the former we use the RockYou
+distribution. For the latter, we will use the empirical distributions
+found in the Dropbox setting (c.f.~\figref{dropbox-summary-one}).
+
+\paragraph{User login model.} A user randomly selects a password $\pw$
+from RockYou with replacement, and attempts to login by typing that
+password. With probability $\alpha$ the user types the password
+correctly, otherwise he mistypes the password, and the login attempt
+is rejected.  The user after this can retry with a probability $\beta$
+or give up trying. We simulate the Dropbox checker as one of our
+heuristic checkers. The hope is if we can tune these two parameters
+and generate typos using the empirical distribution we saw at Dropbox,
+we should be able to regenerate the experiment results.  So, first we
+runt the simulation with 100,000 random samples of user selected
+passwords from RockYou, and set the Dropbox checker as $\exchecker$
+with extra logging for failed logins.  We analyze the log as before
+and compute the percentage of failed logins that can be corrected by
+one of the top three correctors. We found that the above model with
+$\alpha=0.67$ and $\beta=0.2$, the percentage of incorrect logins
+corrected by the top three correctors becomes 8.78\% and percentage
+increase in login is 3.13\%.  These numbers are close to what we saw
+in reality, and a sanity check for our approach.
+
+Given those two parameters we turn to evaluate our other heuristic
+checkers in terms of there utility.  We analyzed the log using the
+$\checkerbl$ and $\checkerapprox$ checker to infer the utilities of
+those two checkers. We used simulation for the heuristic checkers
+because,  it is safer to do so, and we can play with
+
+
+\fixme{...} \tnote{need to explain how when calculating utility improvement, we
+only need a subset of statistics needed for calculating utility, namely the
+probability of not typo'ing or typo'ing in a way not covered by model}
+
+The results of these simulations appear in \figref{fig:correctors-alpha}. 
+We start with the utility improvement of any single checker function
+used with $\checkerall$. This provides a sense of how much impact an individual
+correction can have and appears in the left table of the figure. 
+\fixme{As expected, most utility improvement comes from correcting
+capitalization errors, with relatively less improvement coming from
+correction of a mistakenly added first or final character, or a
+number-to-symbol conversion.} 
+Note that since the checkers within $\topfive$ are mutually exclusive, one can
+calculate utility improvement of $\checkerall$ using $\toptwo$, $\topthree$, and
+$\topfive$ just by adding the appropriate rows: \fixme{XX\%}, \fixme{yy\%}, and
+\fixme{zz\%}, respectively.
+
+
+\begin{figure}[t]
+  \centering\gamesfontsize
+  \begin{tabular}[t]{llr}
+    \toprule
+    \textbf{Scheme} & \textbf{Corrector(s)} & $\utilinc$ \\\midrule
+    \multirow{5}{*}{$\checkerall$} & \swcall   &\\
+     & \swcfirst &\\
+     & \rmlast   &\\
+     & \rmfirst  &\\
+     & \dtoslast &\\
+    \bottomrule
+  \end{tabular}
+    \begin{tabular}[t]{lcr}
+    \toprule
+    \textbf{Scheme} & \textbf{Corrector(s)} & $\utilinc$ \\\midrule
+    \multirow{3}*{$\checkerbl$} & $\toptwo$ &\\
+     & $\topthree$ &\\
+     & $\topfive$ &\\\midrule
+    \multirow{3}*{$\checkerall$} & $\toptwo$ &\\
+     & $\topthree$ &\\
+     & $\topfive$ &\\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Utility improvements for different corrector sets. \textbf{(Left)} 
+    Utility of always applying a single corrector function from the top five set $\topfive$.
+    \textbf{(Right)} Utility of blacklisting and approximate optimal for top
+    two, three, and five correctors.}
+    %utility improvement and loss ratios are given in percentage and in the final column
+    %we report the ratio of utility improvement to security loss.}
+    %The rightmost column represents the weight of a corrector computed
+    %as ${\utilinc-1\over \secloss_{10^3}-1}$. }
+  \label{fig:correctors-alpha}
+\end{figure}
+
+In the right table of \figref{fig:correctors-alpha} we give the blacklisting and
+approximately optimal checkers' utility improvement for each of
+$\toptwo$, $\topthree$ and $\topfive$.  \fixme{...}
+A couple of trends are worth noting. First, the drop in utility improvement
+moving from checking all typos and sometimes not checking due to blacklisting
+(\checkerbl) or
+too large of cumulative mass (\checkerapprox) is smaller than one might expect. 
+For example, with $\toptwo$ utility improvement is \fixme{2.03\%, 1.93\%, and 1.83\% for the three
+checkers}. The reason is in part because popular passwords are less likely to
+mistyped (c.f., \figref{fig:popularity-typo}), and because of the steep drop off in
+probability mass in real password distributions such as RockYou.
+We will in subsequent analyses 
+restrict attention to $\toptwo$ given its high utility improvement and low
+security loss.  It is interesting to note, and possibly no coincidence, that
+Facebook appears to implement $\checkerall$ for $\toptwo$. 
+
+%Utility was defined in the last section; here we estimate it by
+%\fixme{simulating the experiments using 
+%the RockYou distribution for $\pwprob$ and for $\typoprob$ either the
+%empirical frequencies of the typos associated to individual correctors as measured in the MTurk
+%study (\figref{fig:correctors-alpha}) or in the Dropbox study
+%(\figref{fig:dropbox-summary-one}, rightmost column).}
+
+Finally in the simulations so far we used RockYou, and this is also used by
+$\checkerapprox$ to estimate the distribution. If we change the simulations to
+calculate utility using Myspace or phpBB, but $\checkerapprox$ still uses
+RockYou as its estimate (and so is therefore slightly wrong), it still obtains
+utility improvements of \fixme{YY\%} (Myspace) and \fixme{ZZ\%} (phpBB) for
+$\toptwo$. 
+
+ 
+
+
+
+\iffalse
+
+%% DATA: singleton correctors
+% >> RESULTS: rockyou
+% name,typo_fix_rate,\fuzzlambda_beta
+% rm-firstc,0.0134977053901,0.0239977804132
+% n2s-last,0.00112480878251,0.00358329352536
+% same,0.0,-3.20342650381e-16
+% rm-lastc,0.084360658688,0.157886008343
+% swc-first,0.224961756501,0.0226411233409
+% swc-all,1.83456312427,0.0425743952525
+
+  
+
+\begin{figure}[t]
+\centering\gamesfontsize
+  \begin{tabular}[t]{lcrrr}
+    \toprule
+    \textbf{Checker} & \textbf{Set} & $\utilinc$ (MTurk) & $\utilinc$ (Dropbox) &  $\secloss_{q}$ (\%)\\
+    \midrule
+    \multirow{3}{*}{\checkerall} 
+                     & $\toptwo$ &  0.59\%& 2.30\%& 4.5\%\\
+                     & $\topthree$& 0.67\%& 3.00\%& 13.2\%\\
+                     & $\topfive$ & 0.68\%& 3.19\%& 14.5\%\\
+    \midrule
+    \multirow{3}{*}{\checkerbl} 
+                     & $\toptwo$ &  0.57\%&    & 2.9\%  \\
+                     & $\topthree$ &  0.64\%&  & 8.2\%\\
+                     & $\topfive$ &  0.65\%&   & 8.2\%\\
+    \midrule
+    \multirow{3}{*}{\checkerapprox} 
+                     & $\toptwo$ &  0.52\%&  & 1.0\%\\
+                     & $\topthree$ & 0.59\%& & 1.0\% \\
+                     & $\topfive$ &  0.60\%& & 1.0\% \\
+
+                     % \swcall   &1.835&3.0& 0.60\\
+                     % \swcfirst &0.225&1.6& 0.14\\
+                     % \rmlast   &0.084&11.6&$<0.01$\\
+                     % \rmfirst  &0.013&1.7& $<0.01$\\
+                     % \dtoslast &0.001&0.2& $<0.01$\\
+    \bottomrule
+  \end{tabular}
+  \caption{Comparison of the checkers $\checkerall$, $\checkerbl$, and
+    $\checkerapprox$ for three different corrector sets using the
+    RockYou distribution over passwords and the MTurk and Dropbox
+    measurements for typo probabilities.}
+  \label{fig:compare-sets}
+\end{figure}
+\fi
+%%(See \figref{fig:popularity-typo}.) The utility increase of $\checkerbl$
+%and $\checkerapprox$ are $1.93\%$ and $1.83\%$ respectively. In the next
+%section we shall see how these checkers perform in the dimension of
+%security loss.
+
+
+
+% Given a checker Chk we compute the utility of the checker in following way.
+% 1. First, for a randomly sampled password \pw in RockYou,
+% 2. Pick one of the correction according to their probabilities Fig 7.
+% 3. If 'other' is picked, skip to step 1.
+% 4. Otherwise, apply the inverse of that mutation on the sampled password, which will be our \typopw. If there are multiple options for the inverse, pick one randomly.
+%     If \typopw = \pw, go to step 2
+% 4. Run it
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

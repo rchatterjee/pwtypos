@@ -1,0 +1,318 @@
+
+\documentclass{article}
+\usepackage[margin=0.5in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{filecontents}
+\usepackage{pgfplots, pgfplotstable}
+\pgfplotsset{width=10cm,compat=1.9}
+%\usepgfplotslibrary{external}
+%\tikzexternalize
+
+
+%% \begin{filecontents}{length-general.dat}
+%% length rpwc tpwc fraction
+%% 3 1 0 0.0
+%% 4 7 0 0.0
+%% 5 200 19 0.095
+%% 6 1953 193 0.0988223246288
+%% 7 872 110 0.126146788991
+%% 8 1136 159 0.139964788732
+%% 9 819 126 0.153846153846
+%% 10 654 113 0.172782874618
+%% 11 1143 187 0.163604549431
+%% 12 757 117 0.154557463672
+%% 13 514 98 0.190661478599
+%% 14 369 68 0.184281842818
+%% 15 293 70 0.238907849829
+%% 16 220 60 0.272727272727
+%% 17 53 14 0.264150943396
+%% 18 796 158 0.198492462312
+%% 19 508 106 0.208661417323
+%% 20 404 80 0.19801980198
+%% 21 225 47 0.208888888889
+%% 22 200 49 0.245
+%% 23 143 36 0.251748251748
+%% 24 115 23 0.2
+%% 25 85 16 0.188235294118
+%% \end{filecontents}
+
+\begin{filecontents}{length-general.dat}
+length rpwc tpwc fraction
+3 208.0 19.0 9.13461538462
+7 5434.0 701.0 12.9002576371
+12 3296.0 600.0 18.2038834951
+18 2529.0 529.0 20.9173586398
+\end{filecontents}
+
+%% \begin{filecontents}{length-mobile.dat}
+%% length rpwc tpwc fraction
+%% 3 1 1 1.0
+%% 4 7 0 0.0
+%% 5 63 1 0.015873015873
+%% 6 430 27 0.0627906976744
+%% 7 349 43 0.123209169054
+%% 8 442 47 0.106334841629
+%% 9 282 35 0.124113475177
+%% 10 229 42 0.183406113537
+%% 11 65 11 0.169230769231
+%% 12 37 13 0.351351351351
+%% 13 22 9 0.409090909091
+%% 14 22 5 0.227272727273
+%% 15 13 4 0.307692307692
+%% 16 11 4 0.363636363636
+%% 17 6 0 0.0
+%% 18 30 3 0.1
+%% 19 17 4 0.235294117647
+%% 20 25 3 0.12
+%% 21 11 4 0.363636363636
+%% 22 9 1 0.111111111111
+%% 23 7 0 0.0
+%% 24 5 1 0.2
+%% 25 2 0 0.0
+%% \end{filecontents}
+
+\begin{filecontents}{length-mobile.dat}
+length rpwc tpwc fraction
+3 71.0 2.0 2.81690140845
+7 1732.0 194.0 11.2009237875
+12 170.0 46.0 27.0588235294
+18 112.0 16.0 14.2857142857
+\end{filecontents}
+
+\begin{document}
+
+\pgfplotstableread{length-general.dat}{\lengthdatag}
+\pgfplotstableread{length-mobile.dat}{\lengthdatam}
+
+\section{Effect of password length on password typo}
+  Figure~\ref{fig-len-typo}
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+        axis y line*=left,
+        ybar, ymin=0,
+        xlabel={Length},
+      ylabel={Count},
+      legend style={
+        at={(0.0,-0.15)},
+        anchor=north west
+      }]
+      \addplot [blue] table [x={length}, y={rpwc}] {\lengthdatag};
+      \addplot [black] table [x={length}, y={tpwc}]{\lengthdatag};
+      \legend{count of samples,count of typo}
+    \end{axis}
+    \begin{axis}[
+      hide x axis,
+      axis y line*=right,
+      pos = right,
+      legend style={
+        at={(0.0,-0.3)},
+        anchor=north west
+      },
+      ylabel={Percentage (\%)}]
+      \addplot [red,very thick] table [x={length}, y={fraction}]{\lengthdatag};
+      \legend{percentage}
+    \end{axis}
+  \end{tikzpicture}\hspace{0.2in}
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+      axis y line*=left,
+      xlabel={Length},
+      ylabel={Count},
+      legend style={
+        at={(0.0,-0.15)},
+        anchor=north west
+      }]
+      \addplot [black,very thick] table [x={length}, y={rpwc}] {\lengthdatam};
+      \addplot [red,very thick] table [x={length}, y={tpwc}]{\lengthdatam};
+      \legend{count of samples,count of typo}
+    \end{axis}
+    \begin{axis}[
+      hide x axis,
+      axis y line*=right,
+      pos = right,
+      legend style={
+        at={(0.0,-0.3)},
+        anchor=north west
+      },
+      ylabel={Percentage (\%)}]
+      \addplot [dashed,blue,very thick] table [x={length}, y
+      expr=\thisrow{fraction}*100]{\lengthdatam};
+      \legend{percentage}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{The figures show, the change in number of typos with password length
+    in general keyboard ({\bf left}) and mobile keyboard ({\bf right}) typing
+    experiment. We can clearly see the percentage of typo (the blue dotted line)
+    increases with size of the password. Over all percentage of typo 16\%. If we
+    only consider the password sampled uniformly from the whole RY data, the
+    percentage of typo is 10.6\%.}
+  \label{fig-len-typo}
+\end{figure}
+
+\section{Effect of password composition on password typo}
+Figure~\ref{fig-comp-typo}
+\begin{filecontents*}{comp-general.csv}
+policy, rpwc, tpwc, fraction
+basic6, 11259, 1830, 0.162536637357
+basic8, 8434, 1527, 0.181052881195
+mod6cc2, 6035, 1198, 0.198508699254
+mod6ds, 3376, 764, 0.226303317536
+comp8c3, 2074, 402, 0.193828351013
+comp8c4, 1716, 428, 0.249417249417
+\end{filecontents*}
+\begin{filecontents*}{comp-mobile.csv}
+policy, rpwc, tpwc, fraction
+basic6,2014,256,0.127110228401
+basic8,1235,186,0.150607287449
+mod6cc2,815,134,0.164417177914
+mod6ds,356,77,0.216292134831
+comp8c3,184,40,0.217391304348
+comp8c4,225,54,0.24
+\end{filecontents*}
+
+\pgfplotstableread[col sep=comma]{comp-general.csv}{\compdatag}
+\pgfplotstableread[col sep=comma]{comp-mobile.csv}{\compdatam}
+\makeatletter
+\pgfplotsset{
+    /pgfplots/flexible xticklabels from table/.code n args={3}{%
+        \pgfplotstableread[#3]{#1}\coordinate@table
+        \pgfplotstablegetcolumn{#2}\of{\coordinate@table}\to\pgfplots@xticklabels
+        \let\pgfplots@xticklabel=\pgfplots@user@ticklabel@list@x
+    }
+}
+\makeatother
+\begin{figure}[h]
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+      axis y line*=left,
+      ybar, ymin=0,
+      xlabel=Policy,
+      ylabel=Count,
+      flexible xticklabels from table={comp-general.csv}{policy}{col sep=comma},
+      xticklabel style={text height=1.5ex}, % To make sure the text labels are nicely
+      % aligned
+      xtick=data,
+      x tick label style={rotate=30,anchor=east},
+      nodes near coords,
+      nodes near coords align={vertical},
+      legend style={
+        at={(0.0,-0.2)},
+        anchor=north west}
+      ]
+      \addplot table[x expr=\coordindex,y=rpwc]{\compdatag};
+      \addplot table[x expr=\coordindex,y=tpwc]{\compdatag};
+      \legend{count of samples, count of typos}
+    \end{axis}
+
+    \begin{axis}[
+      hide x axis,
+      axis y line*=right,
+      ymin=0,
+      ymax=25,
+      pos = right,
+      legend style={
+        at={(0.0,-0.35)},
+        anchor=north west
+      },
+      ylabel={Percentage (\%)}]
+      \addplot [dashed,blue,very thick] table [x expr=\coordindex, y
+      expr=\thisrow{fraction}*100]{\compdatag};
+      \legend{percentage}
+    \end{axis}
+  \end{tikzpicture}\vspace{0.2in}
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+      axis y line*=left,
+      ybar, ymin=0,
+      xlabel=Policy,
+      ylabel=Count,
+      flexible xticklabels from table={comp-mobile.csv}{policy}{col sep=comma},
+      xticklabel style={text height=1.5ex}, % To make sure the text labels are nicely
+      % aligned
+      xtick=data,
+      x tick label style={rotate=30,anchor=east},
+      nodes near coords,
+      nodes near coords align={vertical},
+      legend style={
+        at={(0.0,-0.2)},
+        anchor=north west}
+      ]
+      \addplot table[x expr=\coordindex,y=rpwc]{\compdatam};
+      \addplot table[x expr=\coordindex,y=tpwc]{\compdatam};
+      \legend{count of samples, count of typos}
+    \end{axis}
+    \begin{axis}[
+      hide x axis,
+      axis y line*=right,
+      ymin=0,
+      ymax=25,
+      pos = right,
+      legend style={
+        at={(0.0,-0.35)},
+        anchor=north west
+      },
+      ylabel={Percentage (\%)}]
+      \addplot [dashed,blue,very thick] table [x expr=\coordindex, y
+      expr=\thisrow{fraction}*100]{\compdatam};
+      \legend{percentage}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Showing the typographical errors for different kinds of password
+    policies for experiment on general keyboard ({\bf left}) and touch keyboard
+    ({\bf right}). {\bf basic6} and {\bf basic8} are password with length 6 or
+    more and 8 or more. {\bf mod6cc2} is the passwords with length at least 6,
+    having at least one upper or lower case letter and one digit or symbol
+    character. {\bf mod6ds} is the passwords with at least one digit and symbol.
+    {\bf comp8c3} and {\bf comp8c4} are complex passwords having at least 8
+    characters from at least 3 and 4 character classes (upper case, lower case,
+    digits or symbols). One point to note, the comp8c3 is surprisingly less error
+    prone.}
+  \label{fig-comp-typo}
+\end{figure}
+
+\section{Effect of caps-lock indicator on password typo}
+\noindent{\large\bf Effect of caps lock indicator.} Surprisingly, in this study, I found
+that mild caps lock indicator (small arrow on the side or below the password)
+has on effect on typos. Because of a bug in my code, the Javascript never showed
+the strong indicator (a red color text ``Caps-Lock'' below the password field),
+and continued to show the weak one. So, there are approx. 2/3 HITs with weak
+caps lock indicator and 1/3 without any indicator.  In
+table~\ref{tab-caps-lock}, the percentage of typo in each of the two
+aforementioned cases are reported with varying the set of samples.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrr}
+  \hline
+  Sample set & No indicator & Weak indicator\\\hline
+  Whole sample &16\% &16\%\\
+  with any letters &16.5\%&17\%\\
+  with uppercase letters & 21\% & 21\%\\\hline
+\end{tabular}\hspace{0.2in}
+\begin{tabular}{lrr}
+  \hline
+  Sample set & No indicator & Weak indicator\\\hline
+  Whole sample &12.7\% &12.2\%\\
+  with any letters &13.1\%&12.9\%\\
+  with uppercase letters & 17.4\% & 23\%\\\hline
+\end{tabular}
+\caption{Showing the effect of caps lock indicator on typos. The result
+  for three cases is reported: first, with all the data that we have collected, second, focusing on
+  only the passwords that has at least one English character and third,
+  passwords with upper case letters. The surprising (to me)
+  result is that there is now effect of weak caps lock indicator on typo in the
+  experiment that we conducted}
+\label{tab-caps-lock}
+\end{table}
+\end{document}
+
+\end{document}
+
+
+
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

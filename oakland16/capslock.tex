@@ -1,0 +1,74 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sanitizing Caps-Lock Errors}
+\label{app:caps-lock-err}
+
+As mentioned in the paper body, preliminary analysis of the data revealed that a large
+fraction of errors was caused by accidental pressing of the caps-lock
+key. Measuring the rate of caps-lock errors is more challenging than
+for other typos, for two reasons. First, caps-lock key presses are not
+recordable via keystroke logging, and thus not directly detectable
+remotely.  Second, if the user engages the caps-lock key while typing
+one password, there's a chance that it will remain on (erroneously)
+while the next one is entered. In MTurk, if an individual worker is to
+be permitted to enter more than one password---even across multiple
+HITs---propagation of caps-lock typos across passwords is therefore
+methodologically unavoidable. This second issue accounts for the
+(artificially) high rate of caps-lock typos observed in our
+experiments. We found that 76 HITs contributed to 1120 caps-lock
+errors.
+
+To adjust for the effect of such propagation errors in determining the rate of
+caps-lock typos, we do the following. We define a caps-lock error as an
+incorrect password which, when the cases of all the letters are
+inverted, becomes correct. In sequentially processing the passwords in a HIT, we
+use a variable {\sf CL-ERR} $\in \{{\tt 0}, {\tt 1}\}$ to denote a heuristic
+determination as to whether the caps lock is in an error state 
+when the user entered a password in a HIT. (An error state could either be that 
+caps lock is on and the user should have typed lower-case letters, or caps lock is
+off and the user should have typed upper case letters.) We initially let {\sf CL-ERR} =
+${\tt 0}$. When we detect a caps-lock error in a password, we record it and
+set {\sf CL-ERR} = ${\tt 1}$. If it is already the case that {\sf CL-ERR} =
+${\tt 1}$ when we reach a password in a HIT, we discard the password. That is,
+in such cases, we do not count it in our computation of error rates for any
+typo. Additionally, for every password in a HIT, we determine (heuristically)
+whether the caps lock has been turned off during entry of the password. If the
+password contains at least one letter and the password was submitted correctly, 
+then we set {\sf CL-ERR} = ${\tt 0}$. 
+
+In general, the intuition here is that we keep track heuristically of whether
+the caps-lock key appears to be engaged erroneously. If the entry of a password
+in a HIT has been affected by the state of the erroneously engaged caps-lock
+key, we treat it as ``tainted,'' and thus discard it from our experiment. (We
+assume heuristically that caps-lock errors are independent of other typos. The
+global effect of discarding ``tainted'' passwords and not recording typos they
+contain in addition to caps-lock errors is small in any case.)
+
+% Measuring the rate of such errors is more challenging than for other
+% typos, for two particular reasons. First, caps lock key presses are
+% not remotely detectable. We use a heuristic rule to determine whether
+% the caps lock key was on during the entry of a password: If the
+% password could be corrected by inverting the case of alphabetic
+% characters, we deem the caps lock to have been on. A second difficulty
+% is that caps lock engagement is the only form of typographical error
+% that propagates across passwords.  We therefore estimate the rate of
+% caps-lock-induced typos as follows. We treat every ``eligible''
+% password as an independent experiment
+
+% On investigating it in detail, we
+% discovered an anomaly in our experimental approach, which is causing
+% such a high count for caps lock related errors. The caps lock error,
+% if not corrected, will spread over all the passwords in the HIT, and
+% will be counted towards as caps lock error, even though this is not a
+% realistic scenario for website login.  There are \fixme{70} HITs which
+% contributes to \fixme{1000} caps lock errors. To remove this error, we
+% adjusted our count of typos in the following way.  Whenever there is a
+% continuous run of caps lock errors, we only considered the first
+% password as a caps lock error and all the rest are considered as
+% correct typing.  In figref{fig:top10-typo} we present both the
+% percentages before the adjustment (second from the right column) and
+% after the adjustment (right most column).
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

@@ -1,0 +1,197 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background and Related Work}
+\label{sec:background}
+
+
+\paragraph{Password checking and threats.} 
+Traditional password-based authentication systems work as follows. A
+user chooses a username and a password at registration time.  For subsequent
+logins, the user submits their username and password.  Using some stored representation of the password (e.g., a salted hash), a password checking
+scheme determines whether the submitted password matches the registered one.
+Login is allowed only if the equality check passes. A more formal
+treatment appears later in \secref{sec:formal}. 
+
+In terms of security, two main threats arise in the context of password checking
+systems. The first is online guessing attacks in which the attacker can submit
+guesses to the checking system via the standard interface. The attacker might
+target a particular login (a vertical attack), or try popular passwords against
+multiple accounts (a horizontal attack). Here the system can employ various
+countermeasures to mitigate online attacks, such as slowing down how quickly
+responses are returned, locking accounts after a certain number of queries per
+unit time, and using anomaly detection mechanisms to flag requests as
+unauthentic based on contextual information.  The second main threat is leakage to attackers of
+password hash databases due to compromise of authentication systems or
+accidental data disclosure. These attackers can mount offline
+brute-force attacks in an attempt to crack the passwords. Our focus will be on
+online brute-force attacks as, looking ahead, our checkers will be compatible
+with existing password storage schemes and thus no alter security with respect to offline
+attacks. We discuss more in \secref{sec:formal}.
+
+%In addition to offline brute-force attacks, in which one assumes the attacker
+%has compromised the stored password hashes, there also exists the threat of
+%online brute-force attacks. Here the attacker can only submit guesses to the
+%password checking system (e.g., over the network). In a \emph{horizontal online
+%attack}, the adversary tries the $\beta$ most probable passwords across a large
+%number of accounts. For example, submitting the always popular password 123456 against every
+%account.  In a \emph{vertical online attack}, the adversary instead queries  just
+%against a single target account. In either case, these are significantly more
+%expensive to the attacker than offline attacks, and as well the authentication
+%system can make use of rate-limiting (slowing down how long checks
+%take)~\cite{..}, locking accounts after a number of incorrect guesses,  and
+%various anomaly detection mechanisms that take advantage of side-information
+%about the login attempt (IP address, time of day,  the user agent string for web
+%login, etc.). 
+%Here Bonneau suggests using $\beta$-success rate as a metric of
+%difficulty. For horizontal attacks, it gives the expected fraction of
+%compromised accounts when using $\beta$ guesses per account, and for vertical
+%attacks, the probability of compromising an account using $\beta$ guesses.
+
+
+\paragraph{Typos in user-selected passwords.} A number of prior
+measurement studies reveal the tendency of users to choose weak
+passwords~\cite{bonneau2014towards,florencio2007lsw,Morris:1979:Password}
+with highly skewed, heavy-headed distributions (i.e., a relatively
+small number of passwords are chosen by a large number of people).
+The most-stated reason is that ease-of-memorability guides users to
+simple, common passwords.
+%Another aspect
+%of usability is, however, the potential difficulty of typing more complex
+%passwords. 
+While memorability is clearly a
+critical aspect of usability, users may also be
+reluctant to choose more complex passwords 
+because entering them is difficult, error-prone, and slow. The problem may be
+exacerbated by various input device form factors, e.g., mobile phone touch
+keyboards.
+
+Few works have measured the difficulty of correctly
+entering user-chosen passwords. Keith et al.~\cite{keith2007usability} measured
+the usability of user-selected passphrases in comparison to passwords
+for a cohort of 56 undergraduate students. 
+%  They delineated between
+%login failures due to memory errors and typographical errors by
+%setting a threshold on the ratio of the Levenshtein
+%distance~\cite{levenshtein1966binary} to the password length of 0.125
+%(1 typo in an 8-character password), and 
+They showed that 2.2\% of entries of user-chosen passwords had a typo
+(defined by thresholding via Levenshtein distance), and the rate of
+typos roughly doubles for more complex passwords (at least length 7,
+one upper-case, one lower-case, one non-letter). A follow-up study by
+the same authors also revealed a typo rate of roughly 2\% with another
+small corpus of students~\cite{keith2009behavioral}.  Their studies,
+being of small scale, may not generalize to other settings, and the
+authors do not analyze the types of errors subjects made.
+
+Mazurek et al.~\cite{mazurek2013measuring} hypothesize that users may pick
+weaker passwords because they are simpler to type and that more
+complex passwords are harder to type. Via large-scale measurements of
+a university authentication system, they show that login errors are
+correlated with stronger passwords. However, they do not analyze
+the nature of errors, i.e., whether they were in fact typos, typing in the entirely
+wrong password, or some other problem.
+
+
+\paragraph{Server-side hashing changes.} In theory a secure sketch
+  ~\cite{dodisetal:2004} could be used to correct some typos in the server
+  side. However, the proven bounds for existing constructions are too weak to provide
+meaningful protection for our setting (in which entropy is quite
+  low). More details are given in~\apref{app:secsketch}. Mehler and
+Skiena~\cite{mehler2006improving} propose to allow controlled collisions in
+password hashing so that, with high probability, passwords with a transposition
+or substitution error hash to the same value. Both such approaches to
+typo-tolerant techniques are not backwards-compatible with existing password
+storage and also will degrade offline attack security.
+
+
+%They measured typo rates of 2.21\% for user-chosen passwords (no
+%requirements), 4.76\% for user-chosen strong passwords (at least length 7, one
+%upper-case, one lower-case, one non-letter), and 19.95\% for user-selected 
+%passphrases (at least length 15, one upper-case, one-lower case, one
+%non-letter).
+%For those failures marked as typos by this threshold ratio, they saw
+%that passphrases exhibited a significantly higher typo rate than shorter
+%passphrases. 
+
+%In a follow-up work, the same authors performed a study using 52 undergraduate
+%students to investigate the usability of at least length 16 user-selected
+%passphrases that were suggested to consist of a sequence of words. They show
+%that the typographical errors are about 2\% of login attempts,  and conclude that allowing users to
+%choose passphrases for which typing is similar to typing normal text (the
+%so-called word-process model) benefits typability. Note that they classify login
+%failures as typographical errors via manual inspection of the contents of the
+%attempt.
+
+
+
+\paragraph{Typos in passphrase systems.}
+Shay et al.~\cite{shay2012correct} perform a study of system-generated
+passwords that are chosen uniformly for a user, chosen uniformly to be
+pronounceable, or chosen uniformly among CorrectHorseBatteryStaple-type
+passphrases~\cite{xkcd} of various word lengths. They measure typos and
+investigate the correlation between password/passphrase length and typing errors,
+and investigate simple typo-tolerance strategies such as ignoring case
+completely and, for passphrases, combining words from a dictionary whose strings
+have large pairwise Damerau-Levenshtein
+distance~\cite{levenshtein1966binary,damerau1964technique}, which, in turn,
+enables correction by comparison with the dictionary.  This latter suggestion is
+originally due to Bard~\cite{bard2007spelling}. Later, Jakobsson and
+Akavipat~\cite{jakobsson2012rethinking} suggest similar dictionary-checking-based error correction in what they call fastwords.
+%But all of this was in the context of system-generated passwords, and so their
+%measurements do not apply for user-selected passwords nor do their 
+%error-correction approaches work in our setting.
+%by Schechter et al.~\cite{schechter:2010:pen} for conventional passwords. 
+%Fastwords take advantage of typo-correction
+%on the client side, and build in some tolerance to word ordering errors on the
+%server side. 
+In contrast to the above works, we focus on arbitrary user-chosen passwords, so these previous measurements and mechanisms unfortunately do not apply to our setting.
+
+%Frykholm and Juels~\cite{frykholm2001error} suggest a system for error-tolerant
+%passwords based on remembering some fraction of previously chosen passwords.
+
+%\fixme{Sort out discussion of~\cite{mazurek2013measuring, shay:2010:encounter}}
+%Bard~\cite{bard2007spelling} and Shay et al.~\cite{shay2012correct} suggest that 
+%password authentication systems that generate passphrases for users 
+%might improve usability by building into these systems some error-correction
+%capabilities. For example Bard gives a mechanism for 
+%passphrases that uses a dictionary with words with only high pairwise
+%Damerau-Levenshtein~\cite{damerau1964technique,levenshtein1966binary} 
+%edit distance. Such approaches cannot work for user-chosen passwords.
+
+
+\paragraph{Typo-tolerant checking in industry.} 
+There have been several examples of major websites accepting slightly
+incorrect versions of user-chosen passwords.  Facebook as early as
+2011 accepted the correct password, the password with all letters'
+cases flipped, or the password with the first letter's case flipped (if
+it is indeed a letter)~\cite{muffett15,zdnet2011Facebook}.  These two
+modifications correspond to errors resulting from leaving the caps
+lock on (or off) or the tendency of (particularly) mobile phone
+keyboards to automatically capitalize the first entered character. Early password authentication mechanisms at Amazon
+allegedly ignored case and any characters beyond the eighth
+position due to a bug~\cite{ghacks2011Amazon}. 
+Users of Vanguard (an investment management company) reported that the answers to
+security questions could have typographical errors and still be
+accepted~\cite{vanguard15i}.
+
+These companies faced significant backlash in the media and from some security
+professionals~\cite{vanguard15i,ghacks2011Amazon,zdnet2011Facebook}. The
+assumption underlying the criticism seems to be that accepting any variant of a
+password will necessarily speed up online guessing attacks.
+
+\paragraph{Open questions.} To summarize, before our work there was no
+information available about the kinds of typos that burden users typing user-selected passwords and
+whether typo-tolerant password checking systems are achievable without
+degrading security. We seek to answer these questions here.
+
+%But how much this speeds up attacks, if at all, has
+%never been investigated (at least in a public forum), and it could be that ---
+%perhaps counter-intuitively --- tolerating some number of typos both 
+%increases usability and security. \tnote{Going to need to massage this last
+%paragraph, it is currently poor}
+  
+  
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

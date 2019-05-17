@@ -1,0 +1,188 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Proofs}
+\label{app:proofs}
+
+We restate and then prove the free correction theorem from~\secref{sec:free-thm}. 
+
+\setcounter{theorem}{0}
+\begin{theorem}[\textbf{Free Corrections Theorem}] Fix some password
+  distribution $\pwprob$ with support $\PW$, a typo distribution
+  $\typoprob$, $0<q<|\PW|$ and an exact checker $\exchecker$.
+%If there exists $\pw \in \PW$ with a neighbor $\pwtypo$ for which
+%$\pwprob(\ball(\pwtypo)) < \pwprob(\pw_q)$,  
+Then for \opchecker with any set of correctors $\typoset$, it 
+holds that $\fuzzlambda_q = \lambda_q$. 
+\label{thm:free_corr2}
+\end{theorem}
+
+\noindent\emph{Proof:}
+Let $\hat{S}$ be the optimal set of $q$ strings which maximizes the
+total acceptance rate for the given checker $\opchecker$.  (Note that
+the order in which the queries are made does not change the success
+probability.)  Let
+$\ball(S) = \mathop{\cup}_{\pwtypo\in S} \ball(\pwtypo)$ for some set
+$S$ of strings in $\strings$.  Recall that
+$\lambda_q = \sum_{i=1}^{q} \pwprob(\pw_i)$ is the sum of the
+probabilities of $q$ most probable passwords in $\PW$. On the other
+hand, $\fuzzlambda_q = \pwprob\left(\ball(\hat{S})\right)$.  The above
+holds because $\ball(\pwtypo)$ is the set of passwords checked by
+\opchecker for a given string $\pwtypo$.
+
+
+The checker $\opchecker$ ensures that the cumulative probability mass of
+any ball is less than or equal to $\pwprob(\pw_q)$ whenever the size
+of the ball is more than 1, but, if the size is one, the cumulative
+probability can be more than $\pwprob(\pw_q)$.  So, we split $\hat{S}$
+into two distinct groups $\hat{S}_1$ and
+$\hat{S}_{>1}$, where $\hat{S}_1$ is the set of all strings in $S$
+whose ball sizes are exactly one, and
+$\hat{S}_{>1} = \hat{S}\setminus \hat{S}_1$.  We can claim following two
+inequalities.
+\begin{align}
+  \label{eq:1}
+  \pwprob\left(\ball(\hat{S}_1)\right) &\le \sum_{i=1}^{|\hat{S}_1|}\pwprob(\pw_i)\\
+  \label{eq:2}
+ \pwprob\left(\ball(\hat{S}_{>1})\right)&\le |\hat{S}_{<1}|\pwprob(\pw_q)  \le \sum_{i=|\hat{S}_1|+1}^{q}\pwprob(\pw_i)
+\end{align}
+Equation~\eqref{eq:1} is true because the
+$|\ball(\hat{S}_1)|=|\hat{S}_1|$, and the right hand side is the
+highest cumulative probability that any set of that size can achieve under
+$\pwprob$.  Equation~\eqref{eq:2} is true because of the facts that $\pwprob(\ball(\pwtypo))\le\pwprob(\pw_q)$  for all $\pwtypo\in\hat{S}_{>1}$, and $\pwprob(\pw_i)\ge\pwprob(\pw_q)$ for all $i\ge q$. 
+So, by a union bound over $\ball(\hat{S}_{>1})$,  we can achieve that inequality. 
+We can add the two inequalities to obtain our  desired result.
+\bnm \pwprob\left(\ball(\hat{S})\right) = \pwprob\left(\ball(\hat{S}_1)\right)  + \pwprob\left(\ball(\hat{S}_{>1})\right) \le  \sum_{i=1}^q\pwprob(\pw_i)
+\enm
+
+% \noindent\emph{Case 1:}
+% If $\hat{S} = \PW_q$, then by construction of $\opchecker$ every ball
+% around strings in $\PW_q$ will only contain the string itself.
+% So, $\cup_{\pwtypo\in\hat{S}}\ball(\pwtypo) = \hat{S} = \PW_q$, and $\fuzzlambda_q = \lambda_q$.\\
+
+% \noindent\emph{Case 2:}
+% Now, consider the case when $\hat{S} \ne \PW_q$, then there must exist
+% at least one $\pwtypo\in\hat{S}\setminus\PW_q$, because
+% $|\PW_q| = |S| = q$. If the ball around $\pwtypo$ contains more than
+% one password, then $\opchecker$ ensures that the weight of that ball
+% is $\le \pwprob_q$. This argument is true for all
+% $\pwtypo\in\hat{S}\setminus\PW_q$. 
+
+
+% this string $\pwtypo$, the ball $\ball{\pwtypo}$
+% might contain more than one passwords, in that case their cumulative
+% sum will be less than $\pwprob_q$.
+
+
+% Applying a union bound we have
+% that
+% $\fuzzlambda_q \le \sum_{\pwtypo\in \hat{S}}\pwprob(\ball(\pwtypo))$.
+% Now, because \opchecker enforces that it only corrects as many
+% passwords as have cumulative mass up to $p(\pw_q)$, we have that
+% $\pwprob(\ball(\pwtypo)) \le \max\{\pwprob(\pwtypo), p_q\}$.  Hence,
+% \bnm \sum_{\pwtypo\in \hat{S}}\pwprob(\ball(\pwtypo)) \le
+% \max\{\sum_{\pwtypo\in \hat{S}}\pwprob(\pwtypo),\, qp_q\} \enm As per
+% our assumption, if $\fuzzlambda_q>\lambda_q$, \bnm
+% \max\{\sum_{\pwtypo\in \hat{S}}\pwprob(\pwtypo),\, qp_q\}>\lambda_q
+% \enm Here we arrive at a contradiction because neither of the terms on
+% the left hand side can be bigger than $\lambda_q$. First, by
+% definition, $\lambda_q$ is the set of $q$ strings which has largest
+% cumulative probability under the probability distribution $\pwprob$,
+% and so $\lambda_q\ge \sum_{\pwtypo\in S}\pwprob(\pwtypo)$, for any
+% size-$q$ subset of $\PW$.  Second,
+% $\lambda_q = \sum_{i=1}^q \pwprob(\pw_i) \ge q\cdotsm\pwprob(\pw_q)$
+% because $\pwprob(\pw_i) \ge \pwprob(\pw_q)$ for all $i\le q$.  This
+% proves that $\fuzzlambda_q\le \lambda_q$.
+
+To show strict equality, simply observe that an attacker against \opchecker 
+can always choose the $q$ most probable passwords to guess
+and achieve a success rate of $\lambda_q$. Thus $\fuzzlambda_q=\lambda_q$.
+\qedsym\\
+
+\setcounter{theorem}{1}
+\begin{theorem} Fix $q > 0$, a distribution pair
+  $(\pwprob,\typoprob)$, and a corrector set $\typoset$. Define
+  \opchecker to work over $\typoset$ and let $\checker$ work for a set
+  of correctors $\typoset' \subseteq \typoset$. If
+  $\secloss_q(\checker) = 0$, then
+  $\utility(\checker) \le \utility(\opchecker)$.
+\end{theorem}
+\def\Bt{\tilde{B}}
+\noindent\emph{Proof:} 
+First recollect utility of any checker $\checker$ is defined as
+\begin{align*}\label{eq:th3eq1}
+\utility(\checker) &= \Pr[\ACC(\checker)\Rightarrow \true]\\
+  & = \sum_{\pwtypo\in\strings}\sum_{\pw\in\ball(\pwtypo)}\pwprob(\pw)\cdot\typoprob_{\pwtypo}(\pw),
+\end{align*}
+where $\ball(\pwtypo)$ is the ball of $\pwtypo$ under $\checker$.
+
+Let assume for contradiction that there exists a checker $\checker$
+which uses only the correctors in $\typoset$, achieves a
+$\secloss_q(\checker)=0$ and still beats the $\opchecker$ in utility,
+that is, $\utility(\checker)>\utility(\opchecker)$. Let denote a ball
+of $\opchecker$ by $B(\cdot)$ and a ball of $\checker$ by
+$\Bt(\cdot)$.  So, if $\utility(\checker)>\utility(\opchecker)$, then
+there exists at least one $\pwtypo\in\strings$ such that
+\begin{equation}
+  \label{eq:th3eq1}
+  \sum_{\pw\in \Bt(\pwtypo)}\pwprob(\pw)\cdot\typoprob_{\pw}(\pwtypo) >\sum_{\pw\in B(\pwtypo)}\pwprob(\pw)\cdot\typoprob_{\pw}(\pwtypo).
+\end{equation}
+% If
+% $\pwprob(\pwtypo)>0$, then $\pwtypo$ must be in $B(\pwtypo)$ and
+% $\Bt(\pwtypo)$ to meet the correctness criteria.
+Now, by construction, the optimal checker $\opchecker$ selects the
+$\ball(\pwtypo)$ that maximizes the utility under the constraint that
+no ball of size 1 has higher cumulative mass than $\pwprob(\pw_q)$.
+Here by utility we mean the sum
+$\sum_{\pw\in\ball(\pw)}\pwprob(\pw)\cdot\typoprob_{\pw}(\pwtypo)$. (See
+Eqn.~\ref{eq:constraints}.)  The checker $\checker$ can achieve higher
+utility only if it violates one of the two constraints
+in~\eqref{eq:constraints}.  The first constraint, required for
+completeness, is inviolable.  The second constraint determines
+security; if $\pwprob(\Bt(\pwtypo))>\pwprob(\pw_q)$ when
+$|\Bt(\pwtypo)|>1$, then the security loss $\secloss_q(\checker)>0$
+according to Lemma~\ref{th:secloss}. Thus there cannot exist any
+$\pwtypo\in\strings$ fulfilling Eqn.~\ref{eq:th3eq1}. Thus
+the assumption $\utility(\checker)>\utility(\opchecker)$ is false.
+\qedsym
+
+
+\setcounter{theorem}{3}
+\begin{lemma}
+\label{th:secloss}
+For any password and typo distribution pair ($\pwprob$, $\typoprob$), checker $\checker$, and parameter
+$0<q<|\PW|$, if there exists a string $\pwtypo\in\strings$,
+s.t. $|\ball(\pwtypo)|>1$ and
+$\pwprob(\ball(\pwtypo))>\pwprob(\pw_q)$, then 
+$\secloss_q > 0$.
+\end{lemma}
+
+\noindent\emph{Proof:}  Security loss $\secloss_q>0$ implies that
+$ \fuzzlambda_q > \lambda_q$. Let $\PW_q = \{\pw_1, \ldots, \pw_q\}$ and recall that
+$\lambda_q = \pwprob(\PW_q)$.  Recall too that:
+\bnm \fuzzlambda_q = \max_{S\subseteq\strings} \pwprob(\ball(S)), \,\,\mbox{ where }|S|=q.\enm
+% We shall prove this theorem by constructing a set $S$ of size $q$ such
+% that $\pwprob(\ball(S))>\pwprob(\PW_q)$.
+First set $S\leftarrow
+(\PW_q\setminus\ball(\pwtypo))\cup\{\pwtypo\}$.
+Clearly $\fuzzlambda_q\ge \pwprob(\ball(S))$.  If we look at the union
+of balls of the strings in the set $S$,
+\[
+  \ball(S) \supseteq \PW_q\cup\ball(\pwtypo)
+\]
+\[  
+  \Rightarrow\pwprob(\ball(S)) \ge \pwprob(\PW_q) + \pwprob(\ball(\pwtypo)\setminus\PW_q) 
+\]
+Now, if $\ball(\pwtypo)\setminus\PW_q\ne\phi$, then clearly $\fuzzlambda_q\ge p(\ball(S))>\pwprob(\PW_q)$, and so $\secloss_q>0$. 
+
+If $\ball(\pwtypo)\setminus\PW_q=\phi$, then $|S| < q$, as
+$|\ball(\pwtypo)|>1$. Thus as long as there exists a password
+$\pw'\in \PW\setminus S$ such that $\pwprob(\pw')>0$, we can add
+$\pw'$ to $S$, resulting in $\pwprob(\ball(S)) > \pwprob(\PW_q)$. This
+concludes the proof.  \qedsym
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

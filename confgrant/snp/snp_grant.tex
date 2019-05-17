@@ -1,0 +1,165 @@
+\documentclass[11pt,a4paper,notitlepage]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{algorithm,amssymb,amsmath,algpseudocode}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\input{../../tomsdefs}
+
+\title{pASSWORD typos and\\ How To Securely Correct Them}
+\author{Rahul Chatterjee}
+\begin{document}
+%\maketitle
+\section*{Application for Conference Grant}
+%\subsection*{Rahul Chatterjee}
+\vspace{0.2in}
+
+% \begin{abstract}\em
+%   We provide the first treatment of typo-tolerant password
+%   authentication for arbitrary user-selected passwords. Such a system,
+%   rather than simply rejecting a login attempt with an incorrect
+%   password, tries to correct common typographical errors on behalf of
+%   the user. Limited forms of typo-tolerance have been used in some
+%   industry settings, but to date there has been no analysis of the
+%   utility and security of such schemes.
+
+%   In studies conducted on Amazon Mechanical Turk and via
+%   instrumentation of the production Dropbox login infrastructure, we
+%   quantify the kinds and rates of typos made by users. Our experiments
+%   reveal that almost 10\% of login attempts fail due to a handful of
+%   simple, easily correctable typos, such as capitalization errors.  We
+%   show that correcting just a few of these typos would reduce login
+%   delays for a significant fraction of users as well as enable an
+%   additional 3\% of users to achieve successful login.
+
+%   We introduce a framework for reasoning about typo-tolerance, and
+%   investigate the seemingly inherent tension here between security and
+%   usability of passwords. We use our framework to show that there
+%   exist typo-tolerant authentication schemes that can get corrections
+%   for ``free'': we prove they are as secure as schemes that always
+%   reject mistyped passwords. Building off this theory, we detail a
+%   variety of practical strategies for securely implementing
+%   typo-tolerance.
+% \end{abstract}
+
+\section{Student's Statement} 
+% \texttt{ Note: An application for a travel award will consist of a
+%   single PDF file with the student's resume, a statement from the
+%   student indicating if they would like to attend the symposium and/or
+%   the workshops (and which workshop), and a letter from the student's
+%   research advisor with a justification of financial need. The
+%   student's statement should also include a summary of research
+%   interests, and a brief discussion of why the applicant will benefit
+%   from participating in the symposium.}\\
+
+I would like to attend the 37th IEEE \underline{Symposium} on Security
+and Privacy from May 23 to May 25, 2016 at The Fairmont, San Jose, CA.
+
+\paragraph{Research Interest.}
+My primary research interest targets making password-based
+authentication and encryption schemes simple, safe and easy to use.
+Passwords are ubiquitous in today's web authentication. Passwords need
+no specialized hardware, such as a card or finger-print reader, to
+authenticate. Moreover, if a user forgets their password, it is much
+easier to reset them compared to other means of authentication system
+that are based on smart-cards or bio-metrics.  However, users tend to
+choose easily guessable passwords, and reuse them across multiple
+websites. Moreover, users complain that complex passwords are hard to
+remember and difficult to enter. My research targets addressing these
+concerns.
+
+% Given that nowadays users have many online accounts, remembering
+% distinct complex passwords for each of them poses severe memory
+% burden on users.
+
+The biggest problem with password based encryption schemes is that,
+attackers can mount {\em offline brute-force decryption} attacks,
+should they get hold of a ciphertext. The attack works by making
+repeated attempts to decrypt the ciphertext with different guesses for
+the password without any need to communicate with any server that is
+the legitimate owner of the ciphertext. Thanks to advances in modern
+password cracking tools, attacker typically guesses the correct
+password within a manageable number of queries. Additionally, every
+wrong guess of the password results in decryption failure, making it
+clear for the attacker to figure out whether the guess is right or
+wrong. I am building new password based encryption schemes that resist
+offline brute-force attacks by producing plausible looking decoy
+plaintexts for each of the guessed password.  This makes it harder for
+the attacker to learn whether or not the decryption was successful.  A
+typical use-case of password based encryption scheme is to protect
+credential stores, such as password managers, where passwords of
+different programs or websites are stored, and the store is encrypted
+under a master-password chosen by the user.  I have designed a new
+generation credential store that aids offline cracking resistance, and
+now I am exploring options to apply that technique to other places
+where password based encryption is used.
+
+
+To prevent passwords from being easily guessable, many security
+experts advise users to choose {\em long and complex} passwords, which
+have to be reproduced exactly every time they wish to log in. Long and
+complex passwords are hard to remember as well as are time consuming
+and error prone to type. This is worse if the user is using a
+touchscreen device to log in. All this, in turn, discourages users
+from choosing strong passwords.  Allowing small typographical errors
+in passwords might alleviate these problems, but it is not clear,
+upfront, how to perform typo-tolerance, and what is the effect on
+security of this.  I am doing studies to quantify the usability and
+security impact of tolerating small errors while entering
+passwords. Our initial study reveals that a significant fraction of
+users failed to log in or faced a delay in login due to a handful of
+easily correctable typographical errors, while, if carefully
+constructed, typo tolerance would not degrade security by more than a
+negligible amount.  % The biggest challenge in analyzing typos in
+% passwords is to collect real world typo data.
+I am also looking into allowing typo tolerance in different contexts
+where human-chosen passwords are used, such as password authenticated
+key exchange, and perform more thorough analysis of security.
+\\
+
+% Why want to join the conference?
+\paragraph{Reasons to join the symposium.}
+IEEE S\&P is one of the best conferences in the field of security and
+privacy. Above all, I am happy and excited to be able to present my
+work in front of the experts in the field, and get valuable feedback
+from them.  Attending this conference as a first year graduate
+student, I will have ample networking opportunities. This will enable
+me to build strong relationships with the members of the vibrant
+community and broaden my scope to collaborate with other
+researchers. To know and get known in the research community is
+important for succeeding in graduate studies. Attending first tier
+conferences, such as IEEE S\&P, will greatly help me to do so.
+
+
+\section{Advisor's Note}
+Rahul is going to present his work titled ``pASSWORD tYPOS and How to
+Correct Them Securely'' at the 37th IEEE Symposium on Security and
+Privacy. This is a very interesting work showing the benefits of
+fixing typographical mistakes in passwords. Also, this work proposes
+ways to securely correct typos, that has minimal security degradation
+with respect to traditional password checkers that do not allow typos
+in password submissions.
+
+Attending this conference will be greatly beneficial for Rahul's
+graduate studies as well as help him building research relationships
+with the members of the community.  Moreover, obtaining the conference
+grant will boost the confidence of a new researcher like Rahul, and
+encourage him to continue working on challenging problems in security
+and privacy that has larger impact on the society.
+
+\input{resume}
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

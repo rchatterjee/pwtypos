@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{colortbl}
+\usepackage{pgfplots}
+\usepackage{filecontents}
+\usepackage{pgfplotstable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{titlesec}
+\usepackage[font=small,compatibility=false]{caption}
+\usepackage{fancyhdr}
+\usepackage[margin=0.5in]{geometry}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+\newcolumntype{C}{>{\centering\arraybackslash}p{2mm}}
+
+\pgfplotstableset{
+    /color cells/min/.initial=0,
+    /color cells/max/.initial=1000,
+    /color cells/textcolor/.initial=,
+    color cells/.code={%
+        \pgfqkeys{/color cells}{#1}%
+        \pgfkeysalso{%
+            postproc cell content/.code={%
+                \begingroup
+                \pgfkeysgetvalue{/pgfplots/table/@preprocessed cell content}\value
+                \ifx\value\empty
+                \endgroup
+                \else
+                \pgfmathfloatparsenumber{\value}%
+                \pgfmathfloattofixed{\pgfmathresult}%
+                \let\value=\pgfmathresult
+                \pgfplotscolormapaccess
+                    [\pgfkeysvalueof{/color cells/min}:\pgfkeysvalueof{/color cells/max}]%
+                    {\value}%
+                    {\pgfkeysvalueof{/pgfplots/colormap name}}%
+                \pgfkeysgetvalue{/pgfplots/table/@cell content}\typesetvalue
+                \pgfkeysgetvalue{/color cells/textcolor}\textcolorvalue
+                \toks0=\expandafter{\typesetvalue}%
+                \xdef\temp{%
+                    \noexpand\pgfkeysalso{%
+                        @cell content={%
+                            \noexpand\cellcolor[rgb]{\pgfmathresult}%
+                            \noexpand\definecolor{mapped color}{rgb}{\pgfmathresult}%
+                            \ifx\textcolorvalue\empty
+                            \else
+                                \noexpand\color{\textcolorvalue}%
+                            \fi
+                            \the\toks0 %
+                        }%
+                    }%
+                }%
+                \endgroup
+                \temp
+                \fi
+            }%
+        }%
+    }
+}
+
+\pgfplotstableread[col sep=comma]{heatmapdata.csv}{\heatmaptable}
+
+\begin{document}
+\begin{figure}
+  \hfill
+  \resizebox{12.0in}{12.0}{\pgfplotstabletypeset[
+    font=\fontsize{2}{11}\selectfont,
+    /pgfplots/colormap={blackwhite}{color=(white) rgb255=(255,170,0)},
+    color cells={min=1,max=6000,textcolor=black},
+    /pgf/number format/fixed,
+    /pgf/number format/precision=1,
+    col sep=comma,
+    row sep=crcr,
+]{\heatmaptable}}
+\end{figure}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

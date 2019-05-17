@@ -1,0 +1,238 @@
+% \documentclass[]{article}
+% \usepackage{lmodern}
+% \usepackage{amssymb,amsmath}
+% \usepackage{ifxetex,ifluatex}
+% \usepackage{fixltx2e} % provides \textsubscript
+% \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+%   \usepackage[T1]{fontenc}
+%   \usepackage[utf8]{inputenc}
+% \else % if luatex or xelatex
+%   \ifxetex
+%     \usepackage{mathspec}
+%   \else
+%     \usepackage{fontspec}
+%   \fi
+%   \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+% \fi
+% % use upquote if available, for straight quotes in verbatim environments
+% \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% % use microtype if available
+% \IfFileExists{microtype.sty}{%
+% \usepackage{microtype}
+% \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+% }{}
+% \usepackage{hyperref}
+% \hypersetup{unicode=true,
+%             pdfborder={0 0 0},
+%             breaklinks=true}
+% \urlstyle{same}  % don't use monospace font for urls
+% \IfFileExists{parskip.sty}{%
+% \usepackage{parskip}
+% }{% else
+% \setlength{\parindent}{0pt}
+% \setlength{\parskip}{6pt plus 2pt minus 1pt}
+% }
+% \setlength{\emergencystretch}{3em}  % prevent overfull lines
+% \providecommand{\tightlist}{%
+%   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% \setcounter{secnumdepth}{0}
+% % Redefines (sub)paragraphs to behave more like sections
+% \ifx\paragraph\undefined\else
+% \let\oldparagraph\paragraph
+% \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+% \fi
+% \ifx\subparagraph\undefined\else
+% \let\oldsubparagraph\subparagraph
+% \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+% \fi
+
+% \date{}
+
+% \begin{document}
+
+\section{Resume}
+\section*{Rahul Chatterjee}\label{rahul-chatterjee}
+% {\bf\large Name:} Rahul Chatterjee 
+\subsection*{Contact Information:}\label{contact-information}
+\begin{itemize}
+\tightlist
+\item
+  Mobile: +1-(414)-877-3378,
+\item
+  E-mail: rahul@cs.cornell.edu,
+\item
+  Web: \url{https://www.cs.cornell.edu/~rahul/}
+\item
+  Address: Cornell Tech, 111 8th Ave \#1202, New York, NY 10011
+\end{itemize}
+
+\subsection*{Research Interests}\label{research-interests}
+Computer Security
+
+\subsection*{Education}\label{education}
+
+\begin{itemize}
+\tightlist
+\item
+  Cornell University, PhD, Computer Science
+\item
+  University of Wisconsin---Madison, Masters, Computer Sciences
+\item IIT Kharagpur, BTech, Computer
+  Science and Engineering
+\end{itemize}
+
+\subsection*{Industry Experience}\label{work-experience}
+\begin{itemize}
+\item
+  \textbf{Microsoft Research Technologies}, (Redmond, USA) (June 2015 - August 2015)\\
+  Project: Analyzing Crypto Board Data to Infer Common Security
+  Engineering Problems.
+\item
+  \textbf{Two Roads Technology Solutions} (Bangalore, India) (June 2012 - May 2013)\\
+  Job Title: Software Developer and Quantitative Analyst
+\item
+  \textbf{Adobe Systems India Pvt. Ltd.} (Noida, India) (May 2011 - July 2011)\\
+  Project: Generating Smart Tags for Images from Meta-data and Web
+\end{itemize}
+
+\renewcommand\refname{{\large Publications}}
+\begin{thebibliography}{0}
+\bibitem{pwtypo16}
+  Rahul Chatterjee, Anish Athalye, Devdatta Akhawe, Ari Juels, Thomas
+  Ristenpart, \textit{pASSWORD tYPOS and How to Correct Them Securely}, Submitted
+  to 37th IEEE Symposium on Security and Privacy 2016 (Oakland).
+\bibitem{pythia15}
+  Adam Everspaugh, Rahul Chatterjee, Samuel Scott, Air Juels, Thomas
+  Ristenpart, \textit{The Pythia PRF Service}, USENIX Security 2015.
+\bibitem{nocrack15}
+  Rahul Chatterjee, Joseph Bonneau, Ari Juels, Thomas Ristenpart,
+  \textit{Cracking-Resistant Password Vaults using Natural Language Encoders},
+  36th IEEE Symposium on Security and Privacy 2015 (Oakland).
+\end{thebibliography}
+
+% \subsection*{Notable Projects:}\label{notable-projects}
+% \begin{itemize}
+% \item
+%   \textbf{pASSWORD tYPOS}\\
+%   \begin{itemize}
+%   \item Goal: Logging in using passwords often gets rejected due to
+%     small typographical errors in the entered password, such as typing
+%     `pASSWORD' instead of `Password'.
+%   \item
+%     I analyzed to what extent typos in password effect the usability using
+%     Amazon Mechanical Turk and instrumenting Dropbox login server.
+%   \item
+%     I also analyzed the security degradation (if any) in allowing small
+%     typos in passwords. Theoretically I showed that we can allow typos in
+%     passwords during logging in without degradation of security provided
+%     the distribution of passwords is available.
+
+%   \end{itemize}
+% \item
+%   \textbf{Cracking Resistant Password Vault}\\
+%   Goal: Encryption scheme for password vaults s.t. decryption with wrong
+%   key should generate plausible looking but decoy vaults, forcing the
+%   attacker to go for online verification.
+% \item
+%   First ever real world application of Honey Encryption. Used existing
+%   password cracking methodologies in defense of password vaults to
+%   create effective distribution transforming en- coder.
+% \item
+%   Showed effective attacks against state of the art approaches, e.g.,
+%   Kamouflage by Bojinov et al.
+% \item
+%   \textbf{The Pythia PRF Services}\\
+%   Goal: Create a remote PRF service that can be used for password
+%   hardening with some added features, such as, the PRF only has access
+%   to the blinded version of the password. One can rotate the secret key
+%   of the PRF and update the stored hash values of the passwords without
+%   access to the plaintext password.
+% \item
+%   Along with password generation, we also found lots of interesting
+%   application like forward secure email system, secure effacing of
+%   encrypted hard drive etc.
+% \item
+%   \textbf{Simultaneous Localization and Mapping using Relational
+%   Trees}\\
+% \item
+%   Project Sponsored by, European Aeronautic Defence and Space Company
+%   (EADS), Germany.
+% \item
+%   Developed an unsupervised method of learning with which a robot, which
+%   is flying over an unknown region and taking snaps periodically, can
+%   build a semantic map of the region and localize its position on the
+%   map using those pictures.
+% \item
+%   Implemented the software using C, C++, OpenCV and built a front end
+%   using Java.
+% \item
+%   \textbf{Information Retrieval and Natural Language Processing.}\\
+%   Goal: Tried to correct and improve fluency of Machine generated text
+%   or second language writer's texts with minimum language dependent
+%   information.
+% \item
+%   This project was selected one of the best four BTech projects in the
+%   department.
+% \item
+%   \textbf{Creating Artistic Effects on Image using Random Digital
+%   Curve}\\
+% \item
+%   Developed algorithm for generating irreducible simple random digital
+%   curves in a constrained domain. Drawing multiple of them on the edge
+%   of binary image and then setting the intensity of each pixel
+%   proportional to the number of times it was visited by the curves give
+%   nice real pencil sketch effect.
+% \item
+%   This work is published in CAIP-2011, Seville, Spain.
+% \end{itemize}
+
+\subsection*{Academic Achievements Awards and
+Scholarships}\label{academic-achievements-awards-and-scholarships}
+
+\begin{itemize}
+\tightlist
+\item
+  Awarded special CS fellowship from the department of Computer
+  Sciences, UW--Madison.
+\item Secured rank 4th in the North Central region
+  and 2nd in the University in ACM-ICPC regional contest 2013.
+\item
+  Awarded IMPRS-CS fellowship for Master Studies in Germany by
+  MPI-Informatics, Saar- brucken, Germany, 2012.
+\item
+  Jagadish Bose National Science Talent Search(JBNSTS) scholarship,
+  2008.
+% \item
+%   Selected for admission to B.Math in Chennai Mathematical
+%   Institute(CMI), Chennai, 2008. • Ranked 12 in West Bengal Joint
+%   Entrance Examination(WBJEE), 2008 (out of 50 thousand students)
+\end{itemize}
+
+\subsection*{Extra Curricular
+Activities}\label{extra-curricular-activities}
+
+\begin{itemize}
+\tightlist
+\item
+  Selected for in Indian National Mathematics Olympiad(INMO) exam in
+  2007.
+\item
+  Executive Committee member of Bengali Association of Madison (BAM), WI
+  since April, 2014. BAM organizes lots of Indian cultural events in
+  Madison.
+\item
+  Captain of Hall Mathematics Olympiad team and won Silver, Gold in
+  Inter Hall Mathematics Olympiad in 2011 and 2012 respectively.
+\item
+  Question setter of Overnite, a coding event of Kshitij-2011 (Asia's
+  largest technomanagement fest), affiliated by ACM.
+\item
+  Secured Second position in Yahoo HackU 2012 at IIT Kharagpur.
+\end{itemize}
+
+% \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "grant"
+%%% End:

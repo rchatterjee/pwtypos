@@ -1,0 +1,55 @@
+\subsection{Typist Speed and Typo Rate}
+\label{sec:typistspeed}
+
+As an enhancement of our experimental results in Section~\ref{sec:mturk}, we report on two experiments that provide further illumination of password features that lead to typos. These experiments further emphasize our observation  that typo rates appear to increase with password complexity.
+
+\paragraph{\em Typist and typo likelihood.} 
+In our MTurk experiments, we timestamped each character as
+it was typed during the experiments.  We sorted the workers based on their
+average typing speed (characters-per-minute) and binned workers into four
+quartiles. For each quartile, we consider the subset of passwords that were
+typed by the typists whose speed falls in that quartile, and we compute the
+fraction of passwords that were mistyped in that subset. The data is reported in
+\figref{fig:typespeed-typo}.  We found that slow typists make more mistakes than
+faster typists. It could be that faster typists are also more skilled and so
+less likely to make mistakes.
+
+%%%%%%%%%%%%%Typing speed and typo%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t]
+  \centering
+  \plotmturk{\tspeedtable}{tspeed}{xlabel={\large
+      Avg.~typing speed (cpm)}, ylabel={\large \%of samples in each
+      class}}{totalsample}{ylabel={\large Probability of typo},
+    ymax=0.1}{typo}{~~Samples}{~~Typos}
+  \caption{ The workers are divided into four quartiles based on their
+    typing speed, and for each quartile we report the percentage of
+    passwords that were mistyped.}
+  \label{fig:typespeed-typo}
+\end{figure}
+
+
+
+\paragraph{\em Password entry time.} We binned the passwords into four quartiles based on the time required
+to type those passwords. The fraction of typos in each of that quartile
+is reported in the middle chart of \figref{fig:typetime-typo}. 
+Passwords that required more time on average to type are more likely to be
+mistyped. 
+%%%%%%%%%%%%%Password popularity and typo%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[t]
+  \centering 
+  \plotmturk{\typingtimetypo}{typingtime}{xlabel={\large Avg.~time required to type (sec)}, ylabel={\large \% of typos in each  cohort}}{totalsample}{ylabel={\large Probability of typo}, ymax=0.1}{typo}{}{}
+
+    \caption{ 
+   % Probability of a password being mistyped is positively
+   % correlated with the amount of time spent in typing the
+   % password. 
+    Passwords are divided into four quartiles based
+    on the amount of time spent by workers to type them, and then compute
+    the fraction of passwords mistyped in each quartile. }
+  \label{fig:typetime-typo} 
+\end{figure}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "IEEEtran.cls"
+%%% End:

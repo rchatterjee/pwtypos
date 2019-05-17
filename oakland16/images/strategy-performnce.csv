@@ -1,0 +1,19 @@
+name,fixc,typoc,correctc,lambdabeta
+# For policy=AuthServer: transforms=(6) [same...n2s-last] (policy=3) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 5468, mass: 0.021096261082 many passowrds. (num-guesses: 1000)
+top5-p3,1801, 5465, 94389,0.128667790959
+# For policy=AuthServer: transforms=(4) [same...rm-lastc] (policy=3) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 3837, mass: 0.0208148137548 many passowrds. (num-guesses: 1000)
+top3-p3,1788, 5465, 94389,0.127185957306
+# For policy=AuthServer: transforms=(4) [same...rm-lastc] (policy=2) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 3242, mass: 0.0198872118766 many passowrds. (num-guesses: 1000)
+top3-p2,1783, 5465, 94389,0.121832137396
+# For policy=AuthServer: transforms=(6) [same...n2s-last] (policy=1) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 5552, mass: 0.0219288600491 many passowrds. (num-guesses: 1000)
+top5-p1,1967, 5465, 94389,0.129877578113
+# For policy=AuthServer: transforms=(6) [same...n2s-last] (policy=2) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 4565, mass: 0.0202178451081 many passowrds. (num-guesses: 1000)
+top5-p2,1794, 5465, 94389,0.123054020497
+# For policy=AuthServer: transforms=(4) [same...rm-lastc] (policy=1) (pwmodel=PwModel: rockyou (lim=1000000, evalmodel=True)):
+#    		       covered 3880, mass: 0.0216389102662 many passowrds. (num-guesses: 1000)
+top3-p1,1954, 5465, 94389L,0.127771439616

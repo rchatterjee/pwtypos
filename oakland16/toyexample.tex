@@ -1,0 +1,41 @@
+
+\subsection{Toy Example of Poor Ball Estimation} 
+\label{sec:example}
+
+Consider the following toy 
+example of the attacker's estimated distribution $\hat{\pwprob}$ and the actual 
+challenge distribution $\pwprob$:
+
+\begin{figure}[h]
+  \centering
+  {\tt\small
+  \begin{tabular}[t]{lc}
+    \multicolumn{2}{c}{\textnormal{Attacker's estimate}}\\
+    \hline
+    $\pw$ & $\hat{\pwprob}(\pw)$\\\hline
+    123456 & $\nicefrac{1}{3}$\\
+    password & $\nicefrac{1}{4}$\\
+    Password & $\nicefrac{1}{4}$\\
+    qwerty & $\nicefrac{1}{6}$\\
+    \hline
+  \end{tabular}
+}
+  {\tt\small
+  \begin{tabular}[t]{lc}
+    \multicolumn{2}{c}{\textnormal{Actual distribution}}\\
+    \hline
+    $\pw$ & $\pwprob(\pw)$ \\\hline
+    123456 & $\nicefrac{1}{2}$\\
+    password & $\nicefrac{1}{5}$\\
+    Password & $\nicefrac{1}{5}$\\
+    asdffghj & $\nicefrac{1}{10}$\\
+    \hline
+  \end{tabular}
+}
+\end{figure}
+\noindent The best guess of the attacker against $\exchecker$ is
+{\tt 123456}, which yields success rate $1/2$. 
+If the attacker wants to optimize her guess in the presence of a typo tolerant
+checker, e.g., $\checkerall$ with correctors $\toptwo$, the
+she select as her first guess is {\tt password} (in whose ball {\tt Password} lies), yielding success probability only $2/5$. 
+

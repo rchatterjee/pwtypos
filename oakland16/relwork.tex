@@ -1,0 +1,80 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Further Related Work}
+\label{sec:relwork}
+
+The study of password checking systems
+originates with Morris and Thompson's seminal paper on the security of the UNIX
+login system~\cite{morris}. Specifically they showed that a majority of
+user-selected passwords were easily cracked via offline brute-force attacks:
+given access to the hashes of passwords, one can repeatedly guess passwords and
+check for consistency with the hash. A long line of subsequent studies have
+confirmed that users tend to choose weak passwords~\cite{bonneau12,of,papers}. 
+%As one notable example relevant to our results later, Bonneau instrumented the
+%Yahoo!~login infrastructure, collected 69 million keyed hashes, and investigated
+%a number of guessing metrics on the empirical distribution of passwords.  He
+%proposes a metric called $\alpha$-guesswork for measuring the difficulty of
+%mounting offline brute-force attacks relative to passwords chosen according 
+%to some distribution.
+
+There has been a wide array of research into memorability
+and its relationship to security. Password strength
+meters help signal to users when their password is
+weak~\cite{others,komanduri2014telepathwords}, whereas password strength
+policies force users to pick passwords according to some recipe that hopefully
+makes them harder to guess.  Ur et al.~\cite{ur2012does} studied the effect of
+password strength meters on user-selected passwords, and their results suggest
+that only stringent meters can help increase security. somethin  Shay et
+al.~\cite{shay2014can} showed that strength policies vary considerably in terms
+of security and usability. Password update policies require users to change
+passwords, and not reuse old passwords, but studies suggest that this
+decreases usability without noticeably increasing
+security~\cite{zhang:2010:security}.  
+
+Some have suggested using passphrases --- sequences of words from some
+dictionary --- instead of passwords (c.f.,~\cite{porter1982password}).
+Human-chosen English passphrases exhibit similarly poor security as
+human-chosen passwords~\cite{bonneau2012linguistic}.  The infamous
+CorrectHorseStapleBattery-type passwords (first popularized by the xkcd comic
+strip~\cite{xkcd}) suggest a user pick words from a dictionary and take the
+password to be the concatenation of them. 
+
+System-generated passwords are an alternative to user-chosen passwords. Here a
+randomized computer program selects a password, and the user must memorize it.
+In some systems the user is offered multiple passwords to choose from.  Bonneau
+and Schechter~\cite{bonneau2014towards} show that in theory it is possible to
+train users to memorize system-generated passwords with 56 bits of
+unpredictability.  System-generated versions of the CorrectHorseStapleBattery
+system have also been suggested~\cite{shay2012correct}, i.e., the system
+randomly selects the words on behalf of the user. It was observed in this work
+that one can perform some kinds of typo checking on behalf of the user, should
+one pick an appropriate dictionary.
+
+In the context of system-generated passwords,  Shay et
+al.~\cite{shay2012correct} performed a study on Mechanical Turk and explore login
+failure rates for generated random passwords, pronouncable passwords~\cite{gasser1975random} and
+CorrectHorseStapleBattery-type passphrases. They report that
+7.9\% of password entries failed due to capitalization typos, and another
+15.2\% are simple typos (edit distance one). They also report a correlation of
+typo likelihood with password/phrase length.
+They suggest some simple strategies for tolerating typos here:
+ignoring white spacing and, for CorrectHorseStapleBattery passphrases, checking
+for the nearest dictionary word. Such a mechanism
+
+\tnote{Need to add into the above a reference to that one-author tech report on
+horsestaple type passphrases, and typo tolerance}
+
+
+\begin{itemize}
+\item Typo tolerant order independent Hashing.~\cite{bard2007spelling}
+\item Error-correcting and hiding all partial information ~\cite{1543961}.
+\item Fuzzy Extractor~\cite{dodisetal:2004,juelswattenberg:1999}.
+\item Usability of Passphrases and error tolerance in that~\cite{shay2012correct}.
+\end{itemize}
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

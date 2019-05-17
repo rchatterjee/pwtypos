@@ -1,0 +1,1116 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Practical Typo-Tolerant Checkers \\and their Security}
+\label{sec:security}
+
+
+In the previous section, we presented an optimal checker \opchecker
+that achieves the maximum acceptance utility that is achievable with
+no loss in security (relative to optimal attacker). Unfortunately,
+\opchecker is hard in general to implement, as it requires exact
+knowledge of the distribution pair $(\pwprob, \typoprob)$, which is
+not practically obtainable in most settings.
+
+Here, we explore checkers that do not rely on exact distribution knowledge and
+are simple to implement. The first tries all corrections in some
+checker set. The latter two incorporate heuristics to try to avoid balls with
+high aggregate mass; these are directly inspired by the results regarding
+$\opchecker$.  As we show experimentally, our checkers can achieve high
+acceptance utility with minimal security degradation, and the heuristics help
+reduce security loss even 
+against adversaries with exact knowledge of the probability distribution~$\pwprob$.  We also investigate the security of these checkers
+against more realistic adversaries that must themselves estimate the 
+distribution~$\pwprob$. For these adversaries our 
+results here suggest that typo tolerance does
+not really help adversaries at all because of the difficulty of getting
+estimates right.
+
+\paragraph{The tolerant checkers.} 
+For the following, let $\pwtypo$ denote the input to the checker and
+$\hatball(\pwtypo)$ the ball of potential passwords to check as defined by the
+set of correctors $\typoset$ for the checker. Presented in increasing order of
+sophistication (and similarity to $\opchecker$), the checkers are:
+
+\begin{newitemize}
+\item \emph{Check-always construction} ($\checkerall$): This checker checks all passwords in
+  $\hatball(\pwtypo)$. Among the three checkers presented here, it achieves the greatest acceptance utility---and,
+  conversely, the largest potential security degradation.
+  
+\item \emph{Blacklist construction} ($\checkerbl$). This checker uses a blacklist $L$ of
+  (ostensibly high-probability) passwords. It checks $\pwtypo$ and
+  every other password $\pw \in \hatball(\pwtypo)$ such that
+  $\pw \not\in L$. Blacklisting in $\checkerbl$ aims to prune or
+  eliminate non-singleton balls with high aggregate probability (as
+  \opchecker does).  In our experiments, we use for the blacklist the 1,000 most popular
+  passwords in RockYou, although one could use other blacklists as
+  well, such as Twitter's banned password list~\cite{twitterbanned}.\footnote{We
+  emphasize that the blacklist is only used for typo corrections: we do not
+  assume users are restricted from registering blacklisted passwords.}
+  %We know this black listing is very specific to
+  %RockYou, and might not generalize. Also, there are other ways of
+  %creating blacklist, but we leave exploration of that to future work.
+
+\item \emph{Approximately optimal construction} ($\checkerapprox$). 
+  This checker heuristically approximates
+  \opchecker. It estimates the distribution $\pwprob$ of passwords
+  using the empirical distribution of the RockYou password leak, and
+  the distribution $\typoprob$ of typos using the empirical
+  distribution learned from our MTurk study
+  (see~\figref{fig:top10-typo}). We denote these empirically derived
+  distributions respectively by $\epwprob$ and~$\etypoprob$. $\checkerapprox$ 
+  computes $\ball(\pwtypo)$ using the
+  constraints used by $\opchecker$ (see the last section), but under the empirical
+  distribution pair $(\epwprob,\etypoprob)$, rather than the
+  (generally unknown) true distribution pair $(\pwprob,\typoprob)$.
+  We set $q=10^3$ for our experiments with $\checkerapprox$. We note that for
+  the correction set sizes we consider, $\chbudget \le 5$,  
+  solving the optimization problem is fast, as only $2^\chbudget$ possibilities for $\ball(\pwtypo)$ must be considered.
+\end{newitemize}
+We will investigate these checkers for typo correction sets $\toptwo =
+\{\swcall,\swcfirst\}$, $\topthree = \toptwo \cup \{\rmlast\}$ and $\topfive =
+\topthree \cup \{\rmfirst,\dtoslast\}$. In terms of utility, we know from the
+second Dropbox study (\secref{sec:dropbox}) the improvements obtained when using 
+$\checkerall$ with $\topthree$. The other two constructions will obtain slightly less utility due
+to the fact that some corrections will not be checked. 
+
+Our preliminary analysis, however, suggests that this utility reduction will be
+slight: both strategies, by design, prevent corrections only to popular
+passwords, which are rarely induced by typos in the first place (see
+\secref{sec:mturk}).  For example, we can simulate acceptance utility for a
+given checker as defined in \secref{sec:formal} by letting $\pwprob$ be defined
+to be the RockYou empirical distribution and $\typoprob$ to be the empirical
+frequencies of typo types observed.  Then for $\topthree$  we have that the
+blacklist and approximately optimal strategies only reduce utility by 0.03
+percentage points and 0.08 percentage points, respectively.\footnote{The
+absolute acceptance utilities for $\topthree$ in these simulations are 0.9628,
+0.9625, and 0.9620. But the low overall rate of typos in the MTurk experiments
+means that exact checking here obtains 0.9564 acceptance utility already, which
+is significantly less than what is implied by our Dropbox measurements.}
+
+% Of course the best way to measure utility for $\checkerbl$ and $\checkerapprox$
+% would be to perform experiments with these schemes in situ at Dropbox. We are in
+% the process of obtaining the necessary approvals from Dropbox to do these
+% additional experiments. We expect to have them approved and included in the next
+% version of the paper.
+
+\iffalse
+% This was for reference for above discussion of decrease in utility for
+% blacklist and approx optimal. 
+\begin{tabular}[t]{lcrrr}
+    \toprule
+    \textbf{Checker} & \textbf{Set} & $\utilinc$ (MTurk) & $\utilinc$ (Dropbox) &  $\secloss_{q}$ (\%)\\
+    \midrule
+    \multirow{3}{*}{\checkerall} 
+                     & $\toptwo$ &  0.59\%& 2.30\%& 4.5\%\\
+                     & $\topthree$& 0.67\%& 3.00\%& 13.2\%\\
+                     & $\topfive$ & 0.68\%& 3.19\%& 14.5\%\\
+    \midrule
+    \multirow{3}{*}{\checkerbl} 
+                     & $\toptwo$ &  0.57\%&    & 2.9\%  \\
+                     & $\topthree$ &  0.64\%&  & 8.2\%\\
+                     & $\topfive$ &  0.65\%&   & 8.2\%\\
+    \midrule
+    \multirow{3}{*}{\checkerapprox} 
+                     & $\toptwo$ &  0.52\%&  & 1.0\%\\
+                     & $\topthree$ & 0.59\%& & 1.0\% \\
+                     & $\topfive$ &  0.60\%& & 1.0\% \\
+
+                     % \swcall   &1.835&3.0& 0.60\\
+                     % \swcfirst &0.225&1.6& 0.14\\
+                     % \rmlast   &0.084&11.6&$<0.01$\\
+                     % \rmfirst  &0.013&1.7& $<0.01$\\
+                     % \dtoslast &0.001&0.2& $<0.01$\\
+    \bottomrule
+  \end{tabular}
+\fi
+
+\paragraph{Implementation considerations.}
+The checkers above are all easy to implement, but care must be taken to 
+optimize performance and ensure timing attacks do not arise.
+Generally, each checker should first run $\exchecker(\pwtypo)$ since this must
+always be computed. If that fails, then a constant-time check of
+the remainder of the ball should be performed. This involves running $\exchecker$ for the maximum number of checks that could occur for
+any $\pwtypo$, i.e., $|\typoset|$. If implemented in this manner, timing and
+other side-channels will only potentially leak that a user made a typo, but
+nothing else about their password.  Users that correctly input their
+passwords experience no performance degradation compared to 
+existing systems.
+
+If one instead does not use a constant time
+implementation, for example just running a check for each string in
+$\ball(\pwtypo)$, then timing
+%Naive implementations of the typo checkers would be vulnerable
+side channels will arise that leak partial information about a user's password.
+For example, checking a singleton ball (which is induced by some inputs and
+not other inputs for $\checkerbl$ and $\checkerapprox$) would be faster 
+than checking a ball with multiple passwords. Thus the
+side-channel would reveal whether the user entered a high-probability password.
+%This problem can be fixed easily by implementing the
+%checkers in a constant-time fashion, always running $\exchecker$ the same
+%number of times.  
+
+
+\paragraph{Security evaluation.} In the remainder of this section we evaluate the
+security of our schemes against two types of attacker:
+
+\begin{newenum}
+%\item The checkers are parameterized
+%  by a set of correctors, and the utility will also vary across the three
+%  strategies. We use simulations using password leaks and our measurements from
+%  Dropbox to evaluate the  utility improvement of these schemes relative to
+%  exact checking for a variety of settings.
+   % To do so, we have to analyze the utility enhancement and security loss for the correctors we described in~\sefref{sec:mturk}.
+%\item Next we would like to compare the performance of our three
+%  empirical checkers with the corrector set we found in from the
+%  prior analysis.  
+\item[(A)] {\bf Exact-knowledge attackers:} We start by evaluating security 
+  of the constructions in the face of attackers that (unrealistically) 
+  know the precise distribution from which passwords are drawn. We will use a
+  range of simulated password distributions and adversarial query budgets.
+  %evaluate the robustness  in the face of a wrong setting of~$q$ or
+  %estimate of the password distribution.
+  %of the real distribution of the passwords and the value of~$q$.  This is
+  %particularly important for $\checkerbl$ and $\checkerapprox$ that themselves
+  %make use of estimates of password distributions.
+ % So, we would like to know
+ % the how $\checkerapprox$ performs when the password distribution is
+ % different from the one the checker assumes or how having significantly more
+ % guesses than  
+ % how does the security loss change when the attacker gets more then
+ % $q$ guesses to make.
+\item[(B)] 
+  {\bf Estimating attackers:} We will then turn to more realistic attackers that
+  do not have exact knowledge of the
+  password distribution. Our evaluations will show that in this context an attacker 
+  attempting to take advantage of tolerant checking, even when they know the
+  precise checker, can be quite error-prone: attackers can even do worse than
+  naive approaches that just guess the most probable passwords in order.
+\end{newenum}
+Our approach for these analyses will be to utilize different password
+leaks to simulate true password selection. We will use the RockYou,
+phpBB, and Myspace leaks for these purposes. These leaks contain respectively the
+passwords of more than 32 million, 255,421, and 41,545 users of
+three different websites. Below when we say the RockYou, phpBB, or
+Myspace distribution we mean sampling according to the empirical
+distribution given by the indicated leak.
+Note that this means for some analyses we will use RockYou 
+both within the designs of 
+$\checkerbl$ and $\checkerapprox$ as well as to test those designs' security,
+optimistically modeling that a ``best-case'' estimate of the distribution is known to
+the checker. While we could use a holdout set (sampled from RockYou without
+replacement, for example) to be more realistic, we instead simply perform 
+analyses using the independent Myspace and phpBB data sets and report all of
+them for completeness.
+
+
+
+\subsection{Security against exact-knowledge attackers}
+
+
+We now evaluate the security of our constructions against attackers that have
+exact knowledge of the password distribution.  
+Thus in this section we assume that the adversary knows not only the exact
+functioning of the checker being used (i.e., what typos it corrects for any
+submitted password),
+but also the precise distribution of
+passwords. The latter is a conservative assumption. Attackers in
+practice will lack such knowledge and we are therefore measuring worst-case
+security from this point of view.
+
+We will focus on the greedy success rate increase
+$\greedylambda_q - \lambda_q$ for various values of the query
+budget~$q$.  % As noted above, the greedy algorithm is known to provide
+% a good approximation for the weight max cover problem; given the small
+% set sizes in our setting especially, we expect
+% $\greedylambda_q \approx \fuzzlambda_q$. Our experiments should thus
+% approximate closely the security loss against the best remote guessing
+% attacks.
+We will also report on $\lambda_q$ to put loss in context.
+To compute these values, we use the RockYou, Myspace, and phpBB
+distributions as a stand-ins to simulate a challenge distribution
+$\pwprob$.  Since the optimal attacker is assumed to know the
+distributions exactly, in the exact checking setting she will simply
+guess the most probable $q$ passwords. Here $\lambda_q$ is
+straightforwardly computable (just sum the probabilities of the
+top~$q$ passwords in the challenge distribution).  In the
+typo-tolerant settings, the attacker will construct a sequence of
+queries that achieves $\greedylambda_q$ using the algorithm given in
+\apref{sec:faster-attack}.
+
+
+% \begin{figure}[t]
+% \centering
+% \footnotesize
+% \begin{tabular}[t]{llrrrr}
+%   \multicolumn{6}{c}{q=1000}\\[2pt]
+%     \toprule
+%      \textbf{Challenge}                     &              &
+%      \multicolumn{3}{c}{$\greedylambda_{q} - \lambda_q$
+%                           ($\times 10^{-2}$)} & \multicolumn{1}{c}{$\lambda_q$ ($\times 10^{-2}$)}\\
+%     \textbf{Dist.} & \textbf{Set} &  \checkerall & \checkerbl & \checkerapprox & \exchecker \\
+%     \midrule
+%     \multirow{3}{*}{RockYou} & $\toptwo$    & 0.51 &  0.32 & 0.00 &\multirow{3}{*}{11.23}\\
+%                              & $\topthree$  & 1.41 & 0.86 & 0.00\\
+%                              & $\topfive$   & 1.57 & 0.87 & 0.00 \\\midrule
+%     \multirow{3}{*}{phpBB} & $\toptwo$    &   0.38 & 0.19 & 0.15 & \multirow{3}{*}{12.71}\\
+%                              & $\topthree$  & 1.01 & 0.60 & 0.42\\
+%                              & $\topfive$   & 1.13 & 0.72 & 0.47 \\\midrule
+%     \multirow{3}{*}{Myspace} & $\toptwo$    & 0.49 &  0.45 & 0.35 & \multirow{3}{*}{9.54}\\
+%                              & $\topthree$  & 2.46 & 2.21 & 1.59 \\
+%                              & $\topfive$   & 3.00 & 2.66 & 1.94 \\\midrule
+%     \bottomrule
+%   \end{tabular}
+% \shepherd{
+%   %%%% q=100
+%   \begin{tabular}[t]{llrrrr}\\
+%     \multicolumn{6}{c}{q=100}\\ \toprule \textbf{Challenge} & &
+%     \multicolumn{3}{c}{$\greedylambda_{q} - \lambda_q$ ($\times
+%       10^{-2}$)} & \multicolumn{1}{c}{$\lambda_q$ ($\times
+%       10^{-2}$)}\\
+%     \textbf{Dist.} & \textbf{Set} & \checkerall & \checkerbl & \checkerapprox & \exchecker \\
+%     \midrule \multirow{3}{*}{RockYou}
+%     & $\toptwo$ & 0.15 & 0.05 & 0.00 &\multirow{3}{*}{4.50}\\
+%     & $\topthree$ & 0.56 & 0.14 & 0.00\\
+%     & $\topfive$ & 0.63 & 0.18 & 0.00 \\\midrule
+%     \multirow{3}{*}{phpBB}
+%     & $\toptwo$ & 0.12 & 0.02 & 0.00 & \multirow{3}{*}{5.50}\\
+%     & $\topthree$ & 0.28 & 0.04 & 0.01 \\
+%     & $\topfive$ & 0.31 & 0.05 & 0.02 \\\midrule
+%     \multirow{3}{*}{Myspace}
+%     & $\toptwo$ & 0.15 & 0.12 & 0.03 & \multirow{3}{*}{2.86}\\
+%     & $\topthree$ & 0.62 & 0.46 & 0.32 \\
+%     & $\topfive$ & 0.87 & 0.68 & 0.52 \\\midrule \bottomrule
+%   \end{tabular}
+% }\shepherd{
+%   %%%% q = 10
+% \begin{tabular}[t]{llrrrr}\\
+%   \multicolumn{6}{c}{q=10}\\[2pt]
+%     \toprule
+%      \textbf{Challenge}                     &              &
+%      \multicolumn{3}{c}{$\greedylambda_{q} - \lambda_q$
+%                           ($\times 10^{-2}$)} & \multicolumn{1}{c}{$\lambda_q$ ($\times 10^{-2}$)}\\
+%     \textbf{Dist.} & \textbf{Set} &  \checkerall & \checkerbl & \checkerapprox & \exchecker \\
+%     \midrule
+%     \multirow{3}{*}{RockYou} & $\toptwo$    & 0.03 &  0.00 & 0.00 &\multirow{3}{*}{1.95}\\
+%                              & $\topthree$  & 0.22 & 0.03 & 0.00\\
+%                              & $\topfive$   & 0.25 & 0.06 & 0.00 \\\midrule
+%   \multirow{3}{*}{phpBB}     & $\toptwo$    & 0.03 & 0.00 & 0.00 &  \multirow{3}{*}{2.75}\\
+%                              & $\topthree$  & 0.19 & 0.02 & 0.00\\
+%                              & $\topfive$   & 0.20 & 0.03 & 0.01 \\\midrule
+%     \multirow{3}{*}{Myspace} & $\toptwo$    & 0.03 & 0.01 & 0.00 & \multirow{3}{*}{0.79}\\
+%                              & $\topthree$  & 0.17 & 0.06 & 0.02 \\
+%                              & $\topfive$   & 0.27 & 0.15 & 0.04 \\\midrule
+%     \bottomrule
+%   \end{tabular}
+% }
+
+%   \caption{Improvement in exact-knowledge adversary's success for each scheme and corrector set across different
+%   challenge distributions. Here $q = 1,000$ (top), $q=100$ (middle), and $q=10$ (bottom).}
+%   \label{fig:compare-sets-security}
+% \end{figure}
+
+
+\begin{figure*}[t]
+\centering
+\gamesfontsize
+%%%% q=1000
+\begin{tabular}[t]{ll*{4}{r}|*{4}r|*{4}{r}}
+    \toprule
+     \textbf{Challenge}  && \multicolumn{4}{c|}{$q=10$} & \multicolumn{4}{c|}{$q=100$} & \multicolumn{4}{c}{$q=1000$} \\
+  
+     % \multicolumn{3}{c}{$\greedylambda_{q} - \lambda_q$
+     %                      ($\times 10^{-2}$)} & \multicolumn{1}{c}{$\lambda_q$ ($\times 10^{-2}$)}\\
+    \textbf{Dist.} & \textbf{Set} &  \textsf{All} & \textsf{wBL} & \textsf{AOp} & \textsf{Ex} & \textsf{All} & \textsf{wBL} & \textsf{AOp} & \textsf{Ex} & \textsf{All} & \textsf{wBL}  & \textsf{AOp} & \textsf{Ex} \\
+    \midrule
+    \multirow{3}{*}{RockYou} 
+  & $\toptwo$    & 0.03 &  0.00 & 0.00 & \multirow{3}{*}{1.95} & 0.15 & 0.05 & 0.00 &\multirow{3}{*}{4.50}& 0.51 &  0.32 & 0.00 & \multirow{3}{*}{11.23} \\
+  & $\topthree$  & 0.22 & 0.03 & 0.00 && 0.56 & 0.14 & 0.00 && 1.41 & 0.86 & 0.00 \\ 
+  & $\topfive$   & 0.25 & 0.06 & 0.00 && 0.63 & 0.18 & 0.00 && 1.57 & 0.87 & 0.00 \\\midrule
+  
+  \multirow{3}{*}{phpBB} 
+  & $\toptwo$    & 0.03 & 0.00 & 0.00 &  \multirow{3}{*}{2.75} & 0.12 & 0.02 & 0.00 & \multirow{3}{*}{5.50} & 0.38 & 0.19 & 0.15 & \multirow{3}{*}{12.71} \\
+  & $\topthree$  & 0.19 & 0.02 & 0.00 && 0.28 & 0.04 & 0.01 && 1.01 & 0.60 & 0.42\\
+  & $\topfive$   & 0.20 & 0.03 & 0.01 && 0.31 & 0.05 & 0.02 && 1.13 & 0.72 & 0.47 \\\midrule
+
+    \multirow{3}{*}{Myspace} 
+  & $\toptwo$     & 0.03 & 0.01 & 0.00 & \multirow{3}{*}{0.79} & 0.15 & 0.12 & 0.03 & \multirow{3}{*}{2.86} & 0.49 &  0.45 & 0.35 & \multirow{3}{*}{9.54}\\
+  & $\topthree$  & 0.17 & 0.06 & 0.02  && 0.62 & 0.46 & 0.32 && 2.46 & 2.21 & 1.59\\
+  & $\topfive$   & 0.27 & 0.15 & 0.04  && 0.87 & 0.68 & 0.52 && 3.00 & 2.66 & 1.94\\\bottomrule
+  \end{tabular}
+
+  \caption{Percentage improvements in an exact-knowledge adversary's success
+    ($\greedylambda_q-\lambda_q$) for each setting (corrector strategy and correction
+    set) and each of the challenge distributions, for $q \in \{10, 100, 1000\}$.}
+  \label{fig:compare-sets-security}
+\end{figure*}
+
+
+
+We start by comparing security for attackers given $q = 1,000$ queries across
+the various distributions, schemes, and corrector sets. We are here being
+conservative: a query budget
+of 1,000 is very generous to an attacker, as many websites will lock an account
+after tens of failed requests.  \figref{fig:compare-sets-security} reports the
+optimal success probability $\lambda_q$ against an exact checker for each
+setting, as well as the improvements $\greedylambda_q - \lambda_q$ for each typo
+tolerant checker, correction set pair.  All numbers are reported as percentages.
+The worst degradation occurs for correcting all top five errors in the Myspace setting, 
+where the attacker's success probability increases by 3\% (from 9.5\% to 12.5\%).  To put this worst-case 
+in perspective, consider the naive
+(and incorrect) assumption that seems to underlie the criticism of typo
+tolerance~\cite{zdnet2011Facebook}: it suggests
+instead a fivefold increase in attacker success when correcting five
+errors and thus an increase to 47.5\% in the Myspace setting.
+
+
+
+
+Elsewhere the increase is much smaller. For example, with
+Rockyou, one can always correct all top five errors with increase only 1.6\%: an
+attacker's probability of success goes from 11.2\% to 12.8\%, a small
+improvement. This means that the adversary's first 1,000 guesses
+against a typo-tolerant checker do not benefit much from
+high-probability balls.  
+
+Moving from $\toptwo$ to $\topthree$ can result in a relatively big jump in security loss. The reason is that
+the \rmlast typo corrector admits many higher-mass balls than only
+correcting the considered capitalization errors. For example, adding a character to many popular
+passwords results in another popular password: \texttt{password} and \texttt{password1}, \texttt{abc123} and
+\texttt{abc1234}. Fewer such pairs exist for capitalization errors since
+fewer users choose passwords with capital letters. Indeed in the worst case for
+$\toptwo$ we see a just a 0.5\% improvement in adversarial success compared to
+the 2.42\% worst-case jump for $\topthree$. It is no
+coincidence, perhaps, that Facebook's policy seems to align with $\checkerall$
+for $\toptwo$. Our measurements are the first reported validation of
+this policy.
+
+Even though security loss is low for $\checkerall$, one may  
+want to do better. The blacklist and approximately
+optimal checkers help. 
+When the challenge distribution is RockYou the
+approximately optimal checker $\checkerapprox$ is, in this case, actually
+optimally secure by
+construction, hence it suffers no security loss at all. Also note that
+$\checkerbl$ may benefit unduly by knowing exactly the top 1,000 passwords from
+RockYou. Thus the more important analyses are when tested on independent
+distributions. Here we see some loss as one would expect given that the attacker in these cases
+has, after all, more information about the challenge distribution than the
+checker. But now the loss is small, and $\checkerapprox$ 
+reduces the security loss compared to $\checkerall$ by
+0.53\% on average over the Myspace and phpBB settings. $\checkerbl$
+also reduces loss compared to $\checkerall$ by 0.27\% on average over Myspace
+and phpBB, but never improves security more than $\checkerapprox$.
+
+We now turn to what happens as $q$ varies.
+In \figref{fig:compare-sets-security} shows the attack success increases for the
+$q = 10$ and $q = 100$ cases. We note that the most realistic in practice is
+$q=10$, since companies often will raise alarms after 10 consecutive 
+failed login attempts.  Here we see that attackers benefit little from
+typo-tolerance, and our $\checkerapprox$ reduces loss to $0.04\%$ or less. Often it
+is zero.
+
+It is concievable that in some settings 
+an attacker might be able to make more than $q = 1,000$ queries, which implies
+that our checker assumed too low of a bound on $q$.
+We focus for simplicity on $\toptwo$,
+a choice we expect many deployments to utilize, and show in 
+%\devd{allowing 100 guesses is very very generous. Doing the graphs till 10000
+%seems extreme to me.} We focus on the corrector set $\toptwo$ because of its si
+%when the true password distribution varies.  
+\figref{fig:secloss-q} the security loss using RockYou as the distribution
+for a range of $q \in \{1,100,200,300,\ldots,\,10\textnormal{,}000\}$.  We have
+drawn a vertical dotted line at $q = 1,000$, which was used by $\checkerapprox$
+as the expected query budget. 
+%The loss for $q = 100$ is very small; for
+%$\checkerall$ attacks only improve by 0.15\% and for \checkerbl only by
+%0.05\%. 
+As before, $\checkerapprox$ has no loss below $q = 1,000$, and 
+only after the attacker gets more than 1,000 queries does the attacker
+obtain an improvement over the exact checking case. \figref{fig:secloss-q-phpBB} shows the same type of chart but now for phpBB.
+This distribution leads to security loss seeing big discrete jumps 
+for larger~$q$, suggesting that at certain points the attacker can take advantage of
+new balls that just come in to play as higher mass than individual passwords.
+A chart for Myspace would exhibit similar trends as the one for phpBB, we omit it for the sake
+of brevity.
+
+\begin{figure}[t]
+  \centering 
+  \begin{tikzpicture}[scale=0.55]
+    \pgfplotstableread[col sep=comma]{images/guess_rockyou.csv}{\guesstable}
+    \begin{axis}[
+%      ymin=0.00, ymax=0.50,
+%      axis y line=right, 
+%      axis x line=none,
+%      y axis style=red!75!black,
+      xlabel={Number of guesses allowed per account},
+      ylabel={$\greedylambda_q - \lambda_q$ ($\times 10^{-2}$)},
+      legend style={at={(.99,0.01)}, anchor=south east},
+      y tick label style={/pgf/number format/fixed,
+        /pgf/number format/1000 sep = \thinspace % Optional if you want to replace comma as the 1000 separator 
+      },
+      each nth point=1, filter discard warning=false, unbounded coords=discard,
+      % scaled y ticks={base 10:2}
+      legend entries={\checkerall, \checkerbl, \checkerapprox},
+      x tick label style={/pgf/number format/fixed},
+      xtick = {1,2000,4000,...,10000},
+      scaled x ticks = false,
+        % cycle list={
+        %   {mark=triangle*, draw=blue!70}, 
+        %   {mark=square*,draw=red!70},
+        %   {mark=*,draw=violet!80},
+        % }
+      ]
+      \addplot [mark repeat=5, mark phase=1, color=blue, mark=*] table [x expr=\thisrow{q}, y expr=(\thisrow{chkall}-\thisrow{chkexact})*100] \guesstable;
+      \addplot [mark repeat=5, mark phase=1, color=red, mark=square*] table [x expr=\thisrow{q}, y expr={(\thisrow{chkbl}-\thisrow{chkexact})*100}] \guesstable;
+      \addplot [mark repeat=5, mark phase=1, color=brown, mark=triangle*] table [x expr=\thisrow{q}, y expr={(\thisrow{chkaop}-\thisrow{chkexact})*100}] \guesstable;
+      % \addplot [mark repeat=5, mark phase=7, color=blue, mark=*] table [x expr=\thisrow{q}, y expr=\thisrow{chkall}/\thisrow{chkexact}] \guesstable;
+      % \addplot [mark repeat=5, mark phase=7, color=red, mark=square*] table [x expr=\thisrow{q}, y expr=\thisrow{chkbl}/\thisrow{chkexact}] \guesstable;
+      % \addplot [mark repeat=5, mark phase=7, color=brown, mark=triangle*] table [x expr=\thisrow{q}, y expr=\thisrow{chkaop}/\thisrow{chkexact}] \guesstable;
+      \draw [dashed] ({axis cs:1000,0}|-{rel axis cs:0,1}) -- ({axis cs:1000,0}|-{rel axis cs:0,0});
+    \end{axis}
+  \end{tikzpicture}  
+
+    \caption{The security loss as a function of $q$ for challenge distribution
+    RockYou and $\toptwo$.}
+  \label{fig:secloss-q}
+\end{figure}
+
+\begin{figure}[t]
+  \centering 
+  \begin{tikzpicture}[scale=0.55]
+    \pgfplotstableread[col sep=comma]{images/guess_phpbb.csv}{\guesstable}
+    \begin{axis}[
+%      ymin=1, ymax=4,
+      xlabel={Number of guesses allowed per account},
+%      ylabel={$\log_2\greedylambda_q$},
+      ylabel={$\greedylambda_q - \lambda_q$ ($\times 10^{-2}$)},
+      legend style={at={(.99,0.01)}, anchor=south east},
+      y tick label style={/pgf/number format/fixed,
+         /pgf/number format/1000 sep = \thinspace % Optional if you want to replace comma as the 1000 separator 
+       },       
+       each nth point=1, filter discard warning=false, unbounded coords=discard,
+       % scaled y ticks={base 10:2}
+       % legend entries={$\exchecker$, $\checkerall$, $\checkerbl$, $\checkerapprox$},
+       legend entries={$\checkerall$, $\checkerbl$, $\checkerapprox$},
+       x tick label style={/pgf/number format/fixed},
+       xtick = {1,2000,4000,...,10000},
+       scaled x ticks = false,
+        % cycle list={
+        %   {mark=triangle*, draw=blue!70}, 
+        %   {mark=square*,draw=red!70},
+        %   {mark=*,draw=violet!80},
+        % }
+      %ymode=log
+       %xmode=log
+      ]
+      %\addplot [mark repeat=5, mark phase=1, color=blue, mark=x] table [x expr=\thisrow{q}, y expr=\thisrow{chkexact}] \guesstable;
+      \addplot [mark repeat=5, mark phase=1, color=blue, mark=*] table [x expr=\thisrow{q}, y expr=100*(\thisrow{chkall}-\thisrow{chkexact})] \guesstable;
+      \addplot [mark repeat=5, mark phase=1, color=red, mark=square*] table [x expr=\thisrow{q}, y expr=100*(\thisrow{chkbl}-\thisrow{chkexact})] \guesstable;
+      \addplot [mark repeat=5, mark phase=1, color=brown, mark=triangle*] table [x expr=\thisrow{q}, y expr=100*(\thisrow{chkaop}-\thisrow{chkexact})] \guesstable;
+%       % \addplot [mark repeat=5, mark phase=1, color=blue, mark=*] table [x expr=\thisrow{q}, y expr=\thisrow{chkall}/\thisrow{chkexact}] \guesstable;
+%       % \addplot [mark repeat=5, mark phase=1, color=red, mark=square*] table [x expr=\thisrow{q}, y expr=\thisrow{chkbl}/\thisrow{chkexact}] \guesstable;
+%       % \addplot [mark repeat=5, mark phase=1, color=brown, mark=triangle*] table [x expr=\thisrow{q}, y expr=\thisrow{chkaop}/\thisrow{chkexact}] \guesstable;
+      \draw [dashed] ({axis cs:1000,0}|-{rel axis cs:0,1}) -- ({axis cs:1000,0}|-{rel axis cs:0,0});
+    \end{axis}
+  \end{tikzpicture}  
+
+    \caption{Difference in exact-knowledge adversary success against typo-tolerant
+    schemes and exact checking, as a function of $q$ for challenge distribution
+    phpBB and $\toptwo$.}
+  \label{fig:secloss-q-phpBB}
+\end{figure}
+
+
+Observe that as $q$ gets larger, the improvement
+$\greedylambda_q - \lambda_q$ flattens out in both charts. The
+attacker in the typo-tolerant cases runs out of heavily-weighted balls
+to take advantage of and ends up just querying passwords that cover
+only one (high-probability) guess. For RockYou, we see that the
+improvement is never more than 1\% and, for phpBB, never
+more than 0.8\%.  This all suggests that even as $q$ grows to values
+unlikely ever to arise in practice, typo-tolerance nevertheless does
+not improve the attacker's rate of success by much. We note that our
+blacklisting and approximately optimal checkers can be made even more
+conservative should one desire, by blacklisting more passwords or
+setting $q$ larger, respectively.
+
+As noted in the previous section, 
+the greedy algorithm is known to provide a
+good approximation for the weighted max coverage problem. Given that
+the password probabilities range over a very dense space, and our
+correction sets are quite small, we expect
+$\greedylambda_q \approx \fuzzlambda$. We do not have any theoretical
+proof for this claim, and leave analysis as an important question for future
+work.  We can of course always bound the actual value of $\secloss_q$ via
+$\seclosso_q\le 1.582\,\seclossg_q + 0.582\lambda_q$. So, for example with 
+the RockYou challenge distribution, $q=10$, and the $\topfive$ corrector
+set we have that $\seclosso_q\le 0.0153$ as compared to $\greedylambda_q -
+\lambda_q = 0.0063$. We expect this three-fold decrease in relative security to be
+quite pessimistic: the better the greedy algorithm approximates the problem the
+worse the adjustment to compute $\seclosso_q$ becomes.
+
+%take advantage of ball coverage
+%gets proportionally less helpful the deeper in the distribution one goes. 
+
+% The English is just WOW!
+% Our experiments have two main objectives. First, we wish to determine
+% the effect of our heuristics on acceptance utility and security. As
+% they do not rely on exact distribution knowledge, they will incur some
+% security degradation, which we set out to measure. At the same time, a
+% relatively promiscuous checking approach such as $\checkerall$ also
+% trades off security against utility, and can achieve higher utility
+% than more secure checkers.
+
+
+
+
+
+
+\subsection{Estimating attackers}
+
+We have so far considered attackers that have exact
+knowledge of the password distribution (even when the system designer may
+not). In practice such attackers do not exist, and instead adversaries must try to estimate
+the distribution of passwords. We refer to these as estimating attackers. 
+As before, we assume adversaries know the exact checking algorithm in use.
+
+We started by considering an adversary that estimates the password distribution
+using the Weir et al.~probabilistic context-free grammar
+(PCFG)~\cite{weiretal:2009}, a trained model of password
+distributions used to build effective crackers. However, our
+experiments with this showed that it provides poor efficacy in online guessing
+attacks, doing significantly worse than the approaches we describe below and,
+importantly, it
+did equally poorly against the typo-tolerant checkers in all settings.
+
+\iffalse
+We train the model
+using the Myspace leak with dictionary dict-0294. This was the best training
+method reported in~\cite{weiretal:2009}. The attacker then performs exactly in the
+way the greedy attacker $\advA^*$ works, only this time the precise knowledge of the 
+distribution of passwords is replaced with the trained PCFG model.  
+For exact checkers, this means the attacker uses the top $q$ passwords according
+to the PCFG model, and for tolerant checkers, the attacker uses 
+the algorithm specified in~\figref{fig:attack-algo} but using the PCFG model
+instead of $\pwprob$.
+
+%In more detail, as the checker algorithm is known to the adversary, for any
+%given string the attacker can find the ball of passwords induced by the checker
+%it is attacking, and also compute the estimated probability mass of that ball
+%using his estimate of the password distribution.  For making a guess the
+%attacker finds the password string from the set of all strings that has the
+%highest cumulative probability mass of the induced ball excluding the passwords
+%that have already been covered by his previous guesses.  The attacker generates
+%$q$ guesses in this way.  Again, the algorithm specified
+%in~\figref{fig:attack-algo} can be used to efficiently compute the best guesses
+%for this sub-optimal attacker by setting the value of $\pwprob$ to the
+%attacker's estimated distribution of passwords.  
+
+We tested this attacker model using as challenge distribution each of the three
+password leaks and using $\toptwo$. When the challenge distribution is Myspace we are training the
+attacker on the same data as it is being tested on, but this can only be
+advantageous to the attacker.
+%The absolute success rates are shown in \figref{fig:secloss-suboptimal}. 
+This strategy performs quite poorly: the attack against an exact checker
+succeeds with probability 1.7\% for RockYou, 2.1\% for phpBB, and 0.2\% for
+Myspace using $q = 1,000$ queries.   Recall that above the 
+guessing attacker against RockYou had $\lambda_q = 11.2\%$ success. The reason that the Weir et
+al.~password model does so poorly here is that it was tuned for offline attacks
+where it is, generally speaking, more important to generate a large number of
+probable passwords rather than exactly get the 1,000 most probable passwords. 
+When attempting to take
+advantage of typo tolerance, the attacker does \emph{no better}, achieving
+the same success rates as in the exact case for any of
+$\checkerall$, $\checkerbl$, and $\checkerapprox$. 
+\fi
+
+
+\begin{figure}[t]
+  \centering\footnotesize
+  \begin{tabular}[t]{c|l|rrr|}
+    \cline{2-5}
+     & \multicolumn{1}{c|}{\textbf{Attacker}}& \multicolumn{3}{c|}{\textbf{Challenge distribution}\Tstrut}\\\cline{3-5}
+%    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{Attacker's Pw\\ distribution}}}
+    &
+    \multicolumn{1}{c|}{\textbf{distribution}}&RockYou&phpBB&Myspace\\\cline{2-5}
+    \multirow{3}{*}{\exchecker} &  RockYou&11.23&3.21&{9.34\Tstrut}\\
+    & phpBB  &8.10 &12.71&1.81\\
+    & Myspace&3.57 &3.32&9.54\\\cline{2-5}\cline{2-5}
+    \multirow{3}{*}{\checkerall} % & \multicolumn{1}{c|}{\textbf{Attacker}}&
+%     \multicolumn{3}{c|}{\textbf{Challenge distribution}\Tstrut}\\\cline{3-5}
+% %    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{Attacker's Pw\\ distribution}}}
+%     & \multicolumn{1}{c|}{\textbf{distribution}}&RockYou&phpBB&Myspace\\\cline{2-5}
+    & RockYou& +0.51 &+0.28 &{\Tstrut +0.25} \\
+    & phpBB  & +0.25 & +0.38 &+0.11 \\
+    & Myspace& \textbf{-0.15}  &\textbf{-0.02} & +0.49\\\cline{2-5}
+    \multirow{3}{*}{\checkerbl} % & \multicolumn{1}{c|}{\textbf{Attacker}}&
+%     \multicolumn{3}{c|}{\textbf{Challenge distribution}\Tstrut}\\\cline{3-5}
+% %    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{Attacker's Pw\\ distribution}}}
+%     & \multicolumn{1}{c|}{\textbf{distribution}}&RockYou&phpBB&Myspace\\\cline{2-5}
+    & RockYou& +0.32 &+0.11 &{+0.20\Tstrut} \\
+    & phpBB  & +0.06  & +0.19 & +0.05\\
+    & Myspace& \textbf{-0.26} & \textbf{-0.20}& +0.46\\\cline{2-5}
+    \multirow{3}{*}{\checkerapprox} % & \multicolumn{1}{c|}{\textbf{Attacker}}&
+%     \multicolumn{3}{c|}{\textbf{Challenge distribution}\Tstrut}\\\cline{3-5}
+% %    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{Attacker's Pw\\ distribution}}}
+%     & \multicolumn{1}{c|}{\textbf{distribution}}&RockYou&phpBB&Myspace\\\cline{2-5}
+    & RockYou& 0.00 &0.00 &{0.00\Tstrut}\\
+    & phpBB  & \textbf{-0.11}  & +0.15 & \textbf{-0.04}\\
+    & Myspace&\textbf{-0.27}  & \textbf{-0.14} & +0.35\\\cline{2-5}
+  \end{tabular}\\
+  \vspace{0.1in}
+  \caption{The top table shows the success rate of an attack against the exact checking
+  scheme for the attacker-estimated distribution (row) used 
+  against the challenge distribution (column). The remaining tables
+  show the \emph{difference} between success rate of an attacker against the tolerant scheme and the exact
+  checking scheme, for the indicated attacker-estimated and actual challenge distribution pairs.
+  All values are in percentages.}
+\label{fig:leakvsleak}
+\end{figure}
+
+
+We therefore turn to a different adversarial strategy for estimating the
+password distribution. We measure the success rate of an attacker that uses one
+of the password leaks as its estimate of the distribution. This is a typical
+strategy in practice. 
+We test these attacks
+against the other two distributions and for each of the exact checking,
+$\checkerall$, $\checkerbl$, and $\checkerapprox$. The latter three use $\toptwo$. 
+The security loss for all combinations are tabulated
+in~\figref{fig:leakvsleak}. (Note that the left-to-right diagonals
+reflect some of the results already shown for the exact-knowledge attacker in
+\figref{fig:compare-sets-security}.) 
+
+%The first observation is that using different leaks does a better job at online
+%guessing attacks against an exact checker than the Weir et al.~model.  Second,
+The improvement the attacker obtains when one switches to a tolerant
+checking system is never greater than 0.28\%.  More interestingly, in some cases
+the difference is negative, which means that the attacker did \emph{worse}
+against the typo-tolerant scheme. This may be counterintuitive, but here the
+estimates the attacker makes about the distribution can often be wrong. This can
+lead her to choose a set of guesses that maximizes the total success probability
+according to her estimate but not according to the challenge distribution.
+We give an example for the curious reader in \apref{sec:example}.
+
+
+In summary, our simulations here suggest that a carefully designed typo-tolerant checker will result in little to no security loss against realistic adversaries.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% JUNKYARD 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\iffalse
+
+\iffalse
+  \begin{tabular}[t]{llrrrr}
+    \toprule
+     \textbf{Challenge}                     &              & \multicolumn{3}{c}{$\secloss_{q}$
+                          (\%)} & \multicolumn{1}{c}{$\lambda_q$ (\%)}\\
+    \textbf{Dist.} & \textbf{Set} &  \checkerall & \checkerbl & \checkerapprox & \exchecker \\
+    \midrule
+    \multirow{3}{*}{RockYou} & $\toptwo$    & 4.5 &  2.9 & 0.0 &\multirow{3}{*}{11.2\%}\\
+                             & $\topthree$  & 13.2 & 8.2 & 0.0\\
+                             & $\topfive$   & 14.5 & 8.2 & 0.0 \\\midrule
+    \multirow{3}{*}{Myspace} & $\toptwo$    & 5.2 &  4.8& 3.7 & \multirow{3}{*}{9.5\%}\\
+                             & $\topthree$  & 25.9 & 23.4 & 18.0 \\
+                             & $\topfive$   & 31.5 & 28.5 & 22.0 \\\midrule
+    \multirow{3}{*}{phpBB} & $\toptwo$    &   3.0 & 1.5 & 1.2 & \multirow{3}{*}{12.7\%}\\
+                             & $\topthree$  & 7.9 & 4.6 & 3.2\\
+                             & $\topfive$   & 8.9 & 5.5 & 3.7 \\\midrule
+    \bottomrule
+  \end{tabular}
+
+\begin{tabular}[t]{llrrrr}
+    \toprule
+     \textbf{Challenge}                     &              &
+     \multicolumn{3}{c}{$\greedylambda_{q}$
+                          (\%)} & \multicolumn{1}{c}{$\lambda_q$ (\%)}\\
+    \textbf{Dist.} & \textbf{Set} &  \checkerall & \checkerbl & \checkerapprox & \exchecker \\
+    \midrule
+    \multirow{3}{*}{RockYou} & $\toptwo$    & 11.7 &  11.5 & 11.2 &\multirow{3}{*}{11.2}\\
+                             & $\topthree$  & 12.6 & 12.1 & 11.2\\
+                             & $\topfive$   & 12.8 & 12.1 & 11.2 \\\midrule
+    \multirow{3}{*}{Myspace} & $\toptwo$    & 10.0 &  10.0 & 9.9 & \multirow{3}{*}{9.5}\\
+                             & $\topthree$  & 11.9 & 11.7 & 11.2 \\
+                             & $\topfive$   & 12.5 & 12.2 & 11.6 \\\midrule
+    \multirow{3}{*}{phpBB} & $\toptwo$    &   13.1 & 12.9 & 12.9 & \multirow{3}{*}{12.7}\\
+                             & $\topthree$  & 13.7 & 13.3 & 13.1\\
+                             & $\topfive$   & 13.8 & 13.4 & 13.2 \\\midrule
+    \bottomrule
+  \end{tabular}
+The column labeled as $\exchecker$ denotes the success rate for each
+challenge distribution when there is no typo tolerance, and that is
+the baseline success rate of our attacker. When we enable typo
+tolerance the success rate has almost no effect for RockYou and Phpbb
+distributions, and very minimal increase ($0.01\%$) for Myspace
+distribution.  Also, we can see that the this model performs
+substantially worse than the optimal attacker. For example, the
+success probability against $\exchecker$ is less than $0.02$ for
+RockYou and phpBB and less than $0.002$ for Myspace, which are orders
+of magnitude less than what an optimal attacker would have achieved
+(c.f.~\figref{fig:secloss-checkers}).  
+
+\iffalse
+\begin{figure}[t]
+  \centering
+\pgfplotstableread[format=inline, col sep=comma]{
+  index,pwdist,excheck,chkall,chkbl,chkaop
+  0,RockYou,1.70,1.71,1.71,1.71
+  1,phpBB,2.05,2.05,2.05,2.05      
+  2,Myspace,0.22,0.23,0.23,0.23
+}\suboptsecloss
+
+% \begin{tikzpicture}[scale=0.65]
+%   \begin{axis}[
+%     axis x line = bottom,
+%     axis y line = left,
+%     ymin=0.1, ymax=2.5,
+%     xlabel={\large Checkers},
+%     ylabel={\large Success of optimal attacker},
+%     xtick=data,
+%     ticks=both,
+%     xticklabels from table={\suboptsecloss}{pwdist},
+%     legend cell align=left,
+%     legend style={at={(0.97,0.97)}, anchor=north east, column sep=1ex},
+%     enlarge x limits=0.25,
+%     ybar,
+%     y tick label style={/pgf/number format/fixed,
+%       /pgf/number format/1000 sep = \thinspace % Optional if you want to replace comma as the 1000 separator 
+%     },
+%     cycle list={
+%       {fill=black!20,draw=black!20},
+%       {fill=black!40,draw=black!40}, 
+%       {fill=black!60,draw=black!60},
+%       {fill=black!80,draw=black!80},
+%     }
+%     ]
+%     \addplot table [x={index}, y={excheck}, ] {\suboptsecloss};
+%     \addplot table [x={index}, y={chkall}, ] {\suboptsecloss};
+%     \addplot table [x={index}, y={chkbl}, ] {\suboptsecloss};
+%     \addplot table [x={index}, y={chkaop},] {\suboptsecloss};
+%     \legend{\exchecker, \checkerall, \checkerbl, \checkerapprox},
+%   \end{axis}
+% \end{tikzpicture}
+
+  \small
+   \begin{tabular}[t]{p{0.5in}*{4}{c}}
+      \toprule
+      Challenge & $\lambda_q$ & \multicolumn{3}{c}{$\greedylambda_q - \lambda_q$}\\
+      Distribution &\exchecker& \multicolumn{1}{c}{\checkerall}& \multicolumn{1}{c}{\checkerbl}&\multicolumn{1}{c}{\checkerapprox}\\\midrule
+      RockYou &0.017 & 0.0  & 0.0 & 0.0\\\midrule
+      phpBB   &0.021 & 0.0  & 0.0 & 0.0\\\midrule      
+      Myspace &0.002 & 0.0  & 0.0 & 0.0\\
+      \bottomrule
+    \end{tabular}\\
+
+    % \tnote{Possibly put the latter three columns as percentages over first
+    % column, i.e. $\greedylambda_q$ as a percentage. So it will be zero
+    % everywhere. Maybe not thinking...} 
+  \caption{The success probability of an attacker that uses the 
+    Weir et al.~\cite{weiretal:2009} PCFG against checkers using~$\toptwo$ and
+    $q = 1,000$ queries.}
+    % \caption{corrector set = $\topthree$}
+%  \end{subfigure}
+    \label{fig:secloss-suboptimal}
+\end{figure}
+\fi
+
+\begin{figure}[t]
+  \centering
+\pgfplotstableread[format=inline, col sep=comma]{
+  index,pwdist,excheck,chkall,chkbl,chkaop
+  0,RockYou,0.113,0.118,0.116 ,0.113
+  1,phpBB,0.127,0.129,0.129 ,0.129 
+  2,Myspace,0.095,0.100,0.100,0.0989
+}\seclosstable
+
+\begin{tikzpicture}[scale=0.65]
+  \begin{axis}[
+    axis x line = bottom,
+    axis y line = left,
+    ymin=0.07, ymax=0.15,
+    xlabel={\large Checkers},
+    ylabel={\large Success of optimal attacker},
+    xtick=data,
+    ticks=both,
+    xticklabels from table={\seclosstable}{pwdist},
+    legend cell align=left,
+    legend style={at={(0.97,0.97)}, anchor=north east, column sep=1ex},
+    enlarge x limits=0.25,
+    ybar,
+    y tick label style={/pgf/number format/fixed,
+      /pgf/number format/1000 sep = \thinspace % Optional if you want to replace comma as the 1000 separator 
+    },
+    cycle list={
+      {fill=red!30,draw=black!80},
+      {fill=blue!30,draw=black!840}, 
+      {fill=green!30,draw=black!80},
+      {fill=black!30,draw=black!80},
+    }
+    ]
+    \addplot table [x={index}, y={excheck}, ] {\seclosstable};
+    \addplot table [x={index}, y={chkall}, ] {\seclosstable};
+    \addplot table [x={index}, y={chkbl}, ] {\seclosstable};
+    \addplot table [x={index}, y={chkaop},] {\seclosstable};
+    \legend{\exchecker, \checkerall, \checkerbl, \checkerapprox},
+  \end{axis}
+\end{tikzpicture}
+{\small
+  \begin{tabular}[t]{p{.5in}rrrr}
+    \toprule
+    PW Dist. & $\exchecker$ &  \checkerall& \checkerbl & \checkerapprox \\\midrule
+    RockYou  & 0.113& 0.118& 0.116 & 0.113\\\midrule
+    phpBB    & 0.127& 0.129& 0.129 & 0.129 \\\midrule
+    Myspace  & 0.095& 0.100& 0.100 & 0.099 \\
+    % Weir PCFG &&0.40&0.39&0.34 \\\bottomrule
+    % Utility Increase\Tstrut && 2.1\% & 2.0\%& 1.9\%\\
+    \bottomrule
+  \end{tabular}
+}
+% \tnote{Maybe we should put these as security losses to be consistent. Also
+%   it will look impressively low I think across the board.} 
+% \rcnote{The issue with putting secloss in percentage is then exchecker will be 0.0\%}
+\caption{Absolute success rates ($\lambda_q$ for $\exchecker$ and
+  $\greedylambda_q$ for others) of an optimal attacker against different
+  checkers using $\toptwo$ for the RockYou, phpBB, and Myspace
+  password distributions. The attacker is optimal in sense that it is
+  aware of the real challenge distribution of passwords and tries to
+  maximize its success rate.  }
+    \label{fig:secloss-distributions}
+\end{figure}
+
+%To evaluate our checkers we
+%use three publicly available password leaks: RockYou, Phpbb and
+%Myspace. % We compute the empirical distribution of passwords
+%% for each of the leaks. We refer to each such distribution by the name
+%% of the leak; e.g., RockYou means the empirical distribution of the
+%% passwords in the RockYou leak.
+%For each checker and for each leak we compute the success rate of an
+%optimal attacker where the challenge password distribution is assumed
+%to be the same as the empirical distribution of that leak and the
+%attacker has complete knowledge of that distribution. In the left
+%table of \figref{tab:secloss-checkers} we report the success rates
+%when the attacker is allowed to make 1,000 guesses per account. Note
+%that the success rate of the optimal attacker against $\exchecker$ is
+%the same as the $\lambda_{10^3}$ of that distribution. As expected the
+%optimal attacker obtains maximum success against $\checkerall$. 
+
+%Also the optimal attacker performs no better against $\checkerapprox$
+%than against $\exchecker$ when the distribution of the checker (which
+%is RockYou) and the challenge distribution matches. For Phpbb and
+%Myspace, even though there is an increase in success rate for the
+%attacker against the $\checkerapprox$, it performs the best among all
+%three heuristic checkers. This answers our third question about how
+%the $\checkerapprox$ will perform when the estimate of the real
+%distribution is incorrect. We can learn a proxy distribution for a
+%challenge password distribution that leaks minimal information about
+%actual passwords but when used with $\checkerapprox$ works well
+%against any adversary.
+
+
+% This alsoanswers part of are third question about the effect on $\secloss_q$ of
+% $\checkerapprox$ for wrong estimation of password
+% distribution. $\checkerapprox$ achieves best security loss for
+% RockYou, $\greedylambda_q=\lambda_q$. But, for other leaks it loses non
+% zero bits of security.  \todo{Fix this part with discussion of the
+%   result in.}  we see the $\checkerapprox$ incurs zero security loss
+% for RockYou. For other leaks also, we see $\checkerapprox$ performs
+% the best.
+
+
+
+
+
+
+
+\iffalse
+\rcnote{
+  What are the big point we want to address?
+  \begin{enumerate}
+  \item {\bf Big Picture.} A significant fraction of users make
+    typos. Most of these typos are very easy to fix. Fixing those
+    degrades security by minuscule amount.
+  \item How to back these statements? 
+    \begin{enumerate}
+    \item We conducted typing experiment in MTurk to get statistics
+      about the fraction of people make typos, and what are the broad
+      types of those typos.
+    \item based on the data we collected, we found that a small subset
+      of transforms can fix large amount of typos.  We create
+      $\topfive$ using that knowledge.
+    \item We want to know what is an optimal guessing attack against a
+      typo tolerant system, and how much is the increase in attacker's
+      success for that algorithm when the attacker has perfect
+      knowledge about the password distribution and when he doesn't .
+    \item We observed that there is a degradation of 0.16 bits of
+      entropy. Analyzing the data we figured out that most of this
+      degradation is caused because typo of many popular passwords
+      fall in the ball of other unpopular passwords. We designed two
+      schemes to deal with this, first choose a list of blacklisted
+      passwords (we used Twitter's banned password list) and then
+      don't check any blacklisted password in the ball unless it is
+      the center of the ball (\pfiveb). In the second case, the server
+      checks at most one password from the blacklisted set in the ball
+      including the ball center (\pfivebone). We found $\pfiveb$
+      performs extremely well with correcting nearly 35\% of typos,
+      and only increasing the success rate from 12.1\% to 12.7\% for
+      q=10^3. (The success rate changes from \fixme{10\%} to
+      \fixme{10.1\%} if we allow q=100.)
+    \item 
+    \end{enumerate}
+  \end{enumerate}
+}
+\fi
+\paragraph{Optimal Attack}
+\label{sec:optimal-attack}
+First, we consider an optimal attack, where we assume the attacker has
+complete knowledge about the distribution of real registered passwords
+in the server that allow typo in the password.  Also, the set of
+mutations that the server apply on the entered password is a public
+information. Given these two information, the attacker wants to find a
+set of $q$ strings in $\Gamma^*$ that maximizes his chance of wining
+the game in \figref{fig:acc-security}.  
+
+We bound the success of an optimal attacker by
+$\fuzzlambda_q(\pwprob, \tcf)$, which is defined as follows,
+\[
+  \fuzzlambda_q(\pwprob, \tcf) = \max_{S\in 2^{\Gamma^*}}\sum_{\pwtypo\in S}\sum_{\pw\in\ball(\pwtypo)} \pwprob(\pw) 
+\]
+
+Computing $\fuzzlambda_q$ requires searching over the power set of
+$\Gamma^*$ and, hence, it is extremely resource intensive. The
+attacker can optimize his search by making following two improvement
+to his algorithm. First, he only need to consider strings that are in
+neighborhood\footnote{Remember, for a password $\pw$, neighborhood
+  $\newnh{\pw}$ is the set of passwords that the server will accept
+  for $\pw$, while $\ball(\pwtypo)$ is the set of registered passwords
+  that have $\pwtypo$ in their neighborhood.} of passwords with
+non-zero probability mass.  Second, we know $q_1$ best guesses of the
+attacker will be subset of $q_2$ best guesses whenever $q_1\le q_2$.
+This amounts to say, that the attacker can do a greedy search over the
+search space, and build the best $q$ guesses incrementally from
+$q=1,2,...$.  This still could be large, as for example, say the
+attacker considers ten million most probable passwords according to
+$\pwprob$, and if the maximum size of a neighborhood around a password
+is $n$, the total search space could be as large as $n\times 10^7$. We
+describe some more optimization to the attacker's algorithm of finding
+$q$ guesses in~\apref{sec:faster-attack}.
+
+
+We define security loss or additional advantage of the optimal
+attacker as
+$ \secloss_q = \log_2\left(\fuzzlambda_q\over\lambda_q\right)$.  We
+present the value of $\epsilon_q$ for each of the mutations we have
+proposed in~\figref{tab:topten-typo}.  The proposed mutations are
+exclusive in sense that no two mutations, for a given $\pwtypo$ will
+produce same mutated string $\pw$ unless the mutated string is same as
+$\pwtypo$. Also, we assumed identity mutation $f_0$ is always part of
+the mutation list while computing $\secloss_q$
+in~\tabref{tab:topten-typo} (\textbf{right most column}).
+
+
+There are three dimension to the trade off the server can perform: the
+loss of security ($\secloss_q$), increase in usability (typo
+correction rate), and increase in the hash computation cost (max size
+of a $\ball$). \todo{Not clear yet! we need specify this three in
+  better ways.} We fix the number of hash computation or maximum size
+of a $\ball$ to 3 and 5. For each of them we, computed the maximum
+amount of typo that can be corrected for a given security loss. We
+present this data in \figref{fig:sec-to-typocorr}.
+\rcnote{lost!! Its probably better to define all three--security loss,
+  hash computation, and typo correction}.
+
+\newcommand{\addtext}[5]{      
+      \node[style={fill=#5,circle,inner sep=0pt,minimum
+        size=4pt},pin={[text=red,text width=#4,pin
+        edge={black,thick}]#3:{\small{\tt #1}}}] at (axis cs:#2) {
+      }; 
+}
+
+\begin{figure*}[t]
+  \centering\small
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+      axis x line*=bottom,
+      axis y line*=left,
+      xlabel={Security loss (bits)},
+      ylabel={Fraction of typo fixed}
+      ]
+      \addplot [blue] table [col sep=comma,
+      x=security, y=typofix] {images/sec-to-corr3.csv};
+
+      % \addplot [violet, thick] table [col sep=comma, row sep=crcr,
+      % x=security, y=typofix] {images/sec-to-corr5.csv};
+      \pgfplotsset{
+        after end axis/.code={
+          \addtext{\{swc-all,\\swc-first,\\rm-lasts\}}{0.0750168937967,0.358060430613}{-45}{2cm}{blue}
+          \addtext{\{swc-all,\\sws-last1\}}{0.0652155185933,0.345033472046}{175}{1.8cm}{blue}
+          \addtext{\{swc-all\}}{0.0425743952525,0.307219106206}{180+45}{1.4cm}{blue}
+        }
+      }
+    \end{axis}
+  \end{tikzpicture}
+  \begin{tikzpicture}[scale=0.7]
+    \begin{axis}[
+      axis x line*=bottom,
+      axis y line*=left,
+      xlabel={Security loss (bits)},
+      ylabel={Fraction of typo fixed}
+      ]
+      \addplot [violet] table [col sep=comma,
+      x=security, y=typofix] {images/sec-to-corr5.csv};
+
+      % \addplot [violet, thick] table [col sep=comma, row sep=crcr,
+      % x=security, y=typofix] {images/sec-to-corr5.csv};
+      \pgfplotsset{
+        after end axis/.code={
+          \addtext{\{swc-all,swc-first,\\rm-lastl,rm-lasts,\\rm-firstc\}}{0.152436812067,0.378686448344}{-20}{1.5cm}{violet}
+\addtext{\{swc-all,swc-first,\\rm-lasts,sws-last1,\\rm-firstc\}}{0.102597967735,0.372257479601}{90}{1.0cm}{violet}
+% rm-firstc|swc-all|sws-last1|swc-first|rm-lasts,0.102597967735,0.372257479601
+\addtext{\{swc-all,\\swc-first,\\up2cap,\\rm-lasts\}}{0.0757133037698,0.36029011786}{-80}{1.8cm}{violet}
+          \addtext{\{swc-all,\\swc-first\}}{0.0652155185933,0.345784224841}{135}{1.6cm}{violet}
+          \addtext{\{swc-all\}}{0.0425743952525,0.307219106206}{180+45}{1.2cm}{violet}
+        }
+      }
+    \end{axis}
+  \end{tikzpicture}
+
+  \caption{This figure shows the maximum amount of typo that can be
+    fixed for a given performance budget (number of hash computation)
+    and the amount of tolerable security loss (increase in beta
+    success rate).  Security loss is calculated as
+    $\log_2\left(\fuzzlambda_{q} \over \lambda_{q}\right)$ for $q=1000$, and
+    performance budget is set to 3 ({\bf left chart})
+    and 5 ({\bf right chart}).}
+  \label{fig:sec-to-typocorr}
+\end{figure*}
+
+\begin{figure}[t]
+  \centering\gamesfontsize
+  \begin{tabular}[t]{lrrr}
+    \toprule
+    \textbf{Corrector} & $\utilinc$ (MTurk) & $\utilinc$ (Dropbox) \\\midrule
+    \swcall   &0.41\%& 0.40\%& 3.0\%\\
+    \swcfirst &0.19\%& 1.90\%& 1.6\%\\
+    \rmlast   &0.08\%& 0.70\%& 11.6\%\\
+    \rmfirst  &0.01\%& 0.12\%& 1.7\%\\
+    \dtoslast &0.00\%& 0.07\%& 0.2\%\\
+    \bottomrule
+  \end{tabular}
+  \caption{For each corrector (row labels), we show the utility
+    increase (\%) and security loss (\%) when it is used by itself with
+    $\checkerall$.  Passwords were drawn according to RockYou for all
+    measurements, while for utility typos are applied as per the MTurk
+    or Dropbox empirical distribution.}
+    %utility improvement and loss ratios are given in percentage and in the final column
+    %we report the ratio of utility improvement to security loss.}
+    %The rightmost column represents the weight of a corrector computed
+    %as ${\utilinc-1\over \secloss_{10^3}-1}$. }
+  \label{fig:correctors-alpha}
+\end{figure}
+
+\fi 
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

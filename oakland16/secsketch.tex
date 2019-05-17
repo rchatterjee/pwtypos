@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Secure Sketches}
+\label{app:secsketch}
+Secure sketches and fuzzy extractors, explored by Dodis et
+al.~\cite{dodisetal:2004,1543961}, are designed to generate
+consistent, cryptographically strong keys from noisy secrets, such as
+biometric data. They may also be applied to passwords, as
+typographical errors in passwords can be modeled as noise.
+Dodis~et~al.~proposed two ways to construct secure sketches for the
+edit-distance metric space; see Section 7
+of~\cite{dodisetal:2004}. They show how to use a low-distortion
+embedding for the edit-distance metric given by Ostrovsky and
+Rabani~\cite{ostrovsky2007low}, and also describe a relaxed embedding
+for the edit-distance metric using $c$-shingles. The security losses
+for these constructions, as given in Proposition 7.2 and Theorem 7.5
+of~\cite{dodisetal:2004}, are
+$t(\log F)2^{O\left(\sqrt{\log(n\log F)\log\log(n\log F)}\right)}$ and
+$\lceil{n\over c}\rceil\log(n-c+1)-(2c-1)t\lceil\log(F^c+1)\rceil$
+respectively. Here, $n$ is the size of the password, $F$ is the
+alphabet size, $t$ is the number of errors/edits tolerated, and $c$ is
+a construction parameter denoting the size of the shingles. In our
+setting, typical values would be $n=8$, $t=1$, and $F=96$. The value
+of $c$, according to Theorem 7.4, should be 1 in our setting (and the
+loss is an increasing function in $c$). Given these parameters, the
+entropy loss of the two secure sketches would be $\approx 91$~bits and
+$\approx 31$~bits respectively. The min-entropy of real world password
+distributions is only about $\le 8$~bits~\cite{bonneau12}. Thus known
+constructions provide no security guarantees in our context, and
+providing proven constructions that do would seem to require new
+techniques.
+
+
+
+
+%% \begin{figure*}[t]
+%%   \centering
+%%   \small
+%%   \begin{tabular}[t]{p{2.0in}lrrrr}
+%%     \toprule
+%%     \multirow{2}{*}{\textbf{Typo type}}     & \multirow{2}{*}{\textbf{Corrector}} & \multicolumn{3}{c}{\textbf{\% of typos}}\\\cline{3-6}
+%%     &&{\bf general} & \pbox{1in}{\bf general\\(adjusted)} & \pbox{.8in}{\bf touchscreen \\device} & {\bf (New) \% of typos}\\\midrule
+%%     Case of all letters flipped & \swcall & 30.9\% & 9.5\% & 8.3\% & 17.8\%\\
+%% %    \midrule
+%%     Case of first character flipped & \swcfirst &3.8\% & 4.6\% & 4.8\% & 7.8\% \\
+%% %    \midrule
+%%     Added extra character at the end & \rmlast &3.5\% & 4.6\% & 6.6\% & 3.7\%\\
+%% %    \midrule
+%%     Added extra character at the front & \rmfirst &  1.0\% & 1.3\% & 1.1\% & 1.1\%\\
+%% %    \midrule
+%%     Missed shift key for the last symbol &  \dtoslast & 0.2\% & 0.2\% & 0.0\% & 0.1\%\\
+%%     % \midrule
+%% %    \midrule
+%%     Proximity errors & n/a & 17.3\% & 22.7\%  & 29.6\% & 19.0\%\\
+%%     %Character replaced w/ nearby character on US keyboard 
+%% %    \midrule
+%%     Transcription errors & n/a & 2.3\% & 3.1\% & 3.4\% & 3.0\%\\
+%% %    \midrule
+%%     Other errors & n/a & 41.0\% & 54.0\% & 45.7\% & 46.5\%\\ 
+%%     % Upper case to Title case and vice verse  &  \upncap & 0.2 & 0.3\%\\
+%%     % \rownumber. & \stodlast & Last character symbol-to-number & 1\%\\
+%%     % Change the shift state of the last non-letter character & \swslast& 0.3\%\\
+%%     \bottomrule
+%%   \end{tabular}
+%% % \hspace{0.2in}
+%% %   \begin{tabular}[t]{lr}
+%% %     \toprule
+%% %     \textbf{Correctors} & \textbf{\% of typos}\\\midrule
+%% %     \swcall & 8.3\%\\
+%% %     \swcfirst & 4.8\%\\
+%% %     \rmlast & 6.6\%\\
+%% %     \rmfirst & 1.1\%\\
+%% %     \dtoslast & 0.0\%\\
+%% %     Proximity errors & 29.6\%\\
+%% %     Transcription errors & 3.4\%\\
+%% %     Other errors  & 45.7\%\\\bottomrule
+%% %   \end{tabular}
+  
+%%   \caption{The top kinds of typos observed in our collected data from
+%%     the MTurk experiment over 100,000 passwords drawn from Rockyou,
+%%     out of which 5,554 were mistyped.  The column labeled corrector
+%%     identifies a correction function that can be used to catch the
+%%     associated class of typos, when possible.  The right three columns
+%%     are the percentage of all typos that were of the indicated type.
+%%     The column under general (adjusted) is the one we obtained after
+%%     discounting the caps lock errors that propagate over other
+%%     passwords in same HIT.  This brings down the total number of mistyped
+%%     password to 4,125. The right most column shows the percentage of
+%%     typos broken down by their types that we saw in the data collected
+%%     from touchscreen devices.  We see 2,075 typos among 23,098 typing
+%%     events. }
+%% \label{fig:top10-typo}
+%% \label{fig:top-typo-mobile}
+%% \end{figure*}
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
+
+
